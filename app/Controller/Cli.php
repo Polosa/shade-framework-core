@@ -32,9 +32,12 @@ class Cli extends \Shade\Controller
                 $skeletonName = $args[2];
                 $skeletonPath = $args[3];
                 $viewReplace = $this->serviceProvider()->getView('\Shade\View\Replace');
+                $classLoaderReflection = new \ReflectionClass('\Composer\Autoload\ClassLoader');
+                $autoloadPath = dirname(dirname($classLoaderReflection->getFileName())).'/autoload.php';
                 $replaces = array(
                     'ShadeApp' => $skeletonName,
                     '%ShadePath%' => $appDir,
+                    '%autoloadPath%' => $autoloadPath
                 );
                 if (file_exists($skeletonPath)) {
                     $skeletonPathIsExistingFile = !is_dir($skeletonPath);
