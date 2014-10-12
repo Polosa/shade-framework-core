@@ -1,0 +1,14 @@
+<?php
+/**
+ * Test template
+ * 
+ * @var string $testVar Variable for test
+ * @see \ShadeApp\Controller\Index::indexAction()
+ */
+?>
+<p>Main page</p>
+<p>Output test var: <?=$testVar?></p>
+<p>Another template rendering result:</p>
+<?=self::inc('test.phtml', array('testVar' => 'ololo'))?>
+<p><a href="<?=self::url('\ShadeApp\Controller\Test', 'testAction', array('arg1', 'arg2'), array('arg1' => 1, 'arg2' => 'ololo'))?>">URL-helper test</a></p>
+<?=self::exe('\ShadeApp\Controller\Test', 'testAction', array('arg1', 'arg2'), array('arg1' => 1, 'arg2' => 'ololo'))?>

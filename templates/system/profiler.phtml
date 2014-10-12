@@ -1,0 +1,18 @@
+<?php
+/**
+ * Profiler output
+ *
+ * @var bool $debugMode
+ * @var int|null $execTime
+ * @var int|null $memory
+ * @var int|null $memoryPeak
+ *
+ * @see \Shade\Controller\Profiler::outputAction()
+ */
+?>
+<?php if($debugMode) : ?>
+    <hr />
+    <p>Execution time: <?=$execTime ?> sec</p>
+    <p>Memory allocated: <?=$memory ?></p>
+    <p>Memory peak: <?=$memoryPeak ?></p>
+<?php endif ?>

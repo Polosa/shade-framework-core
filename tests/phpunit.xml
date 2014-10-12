@@ -1,0 +1,11 @@
+<phpunit bootstrap="bootstrap.php">
+    <testsuite name="Shade">
+        <directory>./</directory>
+    </testsuite>
+
+    <filter>
+        <whitelist>
+            <directory suffix=".php">../app</directory>
+        </whitelist>
+    </filter>
+</phpunit>

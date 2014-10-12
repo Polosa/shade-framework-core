@@ -1,0 +1,31 @@
+{
+    "name": "shade/shade-framework-core",
+    "minimum-stability": "dev",
+    "type": "project",
+    "description": "Shade Framework core components",
+    "keywords": ["framework", "microframework", "PHP"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Denis Shapkin",
+            "email": "i@denis-shapkin.ru"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.0",
+        "squizlabs/php_codesniffer": "dev-master",
+        "fabpot/php-cs-fixer": "1.0.*@dev"
+    },
+    "bin": ["shade-cli.php"],
+    "config": {
+        "bin-dir": "bin"
+    },
+    "autoload": {
+        "psr-4": {
+            "Shade\\": "app/"
+        }
+    }
+}
