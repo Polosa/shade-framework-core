@@ -18,9 +18,14 @@ namespace Shade;
 class Router
 {
     /**
-     * Default Controller
+     * Default Web Controller
      */
-    const DEFAULT_CONTROLLER = 'Index';
+    const DEFAULT_WEB_CONTROLLER = 'Index';
+
+    /**
+     * Default Cli Controller
+     */
+    const DEFAULT_CLI_CONTROLLER = 'Cli';
 
     /**
      * Base Controller
@@ -115,14 +120,16 @@ class Router
             }
 
             $destination = (empty($destination) || $destination === '/') ? $request::DEFAULT_DESTINATION : $destination;
+            $defaultController = self::DEFAULT_WEB_CONTROLLER;
         } elseif ($request instanceof Request\Cli) {
             $server = $request->getServer();
-            if (isset($server['argv'][1], $server['argv'][2]) && $server['argv'][1] == 'run') {
-                $destination = $server['argv'][2];
-            } else {
-                $destination = $request::DEFAULT_DESTINATION;
-            }
+            $destination = isset($server['argv'][1]) ? $server['argv'][1] : $request::DEFAULT_DESTINATION;
+            $defaultController = self::DEFAULT_CLI_CONTROLLER;
         } elseif ($request instanceof Request\Virtual) {
+            if (!method_exists($request->getController(), $request->getAction())) {
+                throw new Exception("Method {$request->getAction()} does not exists in class {$request->getAction()}");
+            }
+            $this->validateActionArguments($request->getController(), $request->getAction(), $request->getActionArgs());
             return new Route($request->getController(), $request->getAction(), $request->getActionArgs());
         } else {
             throw new Exception('Request type not supported');
@@ -154,8 +161,8 @@ class Router
         if (is_file($tryPath.'.php')) {
             $controllerFile = $part;
             array_shift($parts);
-        } elseif (is_file($controllerPath.self::DEFAULT_CONTROLLER.'.php')) {
-            $controllerFile = self::DEFAULT_CONTROLLER;
+        } elseif (is_file("{$controllerPath}{$defaultController}.php")) {
+            $controllerFile = $defaultController;
         } else {
             throw new Exception("Controller not found for route '{$destination}'");
         }
@@ -185,16 +192,7 @@ class Router
         }
 
         $args = $parts;
-
-        // Checking arguments
-        $actionArgsNum = count($args);
-        $reflectionAction = new \ReflectionMethod($controllerClass, $action);
-        $reflectionActionArgsNum = $reflectionAction->getNumberOfParameters();
-        $reflectionActionReqArgsNum = $reflectionAction->getNumberOfRequiredParameters();
-
-        if ($actionArgsNum < $reflectionActionReqArgsNum || $actionArgsNum > $reflectionActionArgsNum) {
-            throw new Exception('Wrong number of arguments provided for '.$controllerClass.'::'.$action);
-        }
+        $this->validateActionArguments($controllerClass, $action, $args);
 
         return new Route($controllerClass, $action, $args);
     }
@@ -301,5 +299,26 @@ class Router
     public function disableCleanUrls()
     {
         $this->cleanUrlsEnabled = false;
+    }
+
+    /**
+     * Validate number of arguments
+     *
+     * @param string $controller Controller class name
+     * @param string $action     Action name
+     * @param array  $args       Arguments
+     *
+     * @throws Exception
+     */
+    protected function validateActionArguments($controller, $action, $args)
+    {
+        $actionArgsNum = count($args);
+        $reflectionAction = new \ReflectionMethod($controller, $action);
+        $reflectionActionArgsNum = $reflectionAction->getNumberOfParameters();
+        $reflectionActionReqArgsNum = $reflectionAction->getNumberOfRequiredParameters();
+
+        if ($actionArgsNum < $reflectionActionReqArgsNum || $actionArgsNum > $reflectionActionArgsNum) {
+            throw new Exception('Wrong number of arguments provided for ' . $controller . '::' . $action);
+        }
     }
 }

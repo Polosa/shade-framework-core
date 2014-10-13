@@ -39,7 +39,7 @@ class Virtual extends Request
      *
      * @var array
      */
-    protected $args;
+    protected $args = array();
 
     /**
      * Constructor

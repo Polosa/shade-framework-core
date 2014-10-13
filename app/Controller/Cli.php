@@ -9,6 +9,9 @@
 
 namespace Shade\Controller;
 
+use Shade\Request\Virtual as VirtualRequest;
+use Shade\Response;
+
 /**
  * Controller "Cli"
  *
@@ -17,10 +20,19 @@ namespace Shade\Controller;
  */
 class Cli extends \Shade\Controller
 {
+
     /**
      * Index Action
      */
     public function indexAction()
+    {
+        return $this->render('system/cli/cli_layout.phtml');
+    }
+
+    /**
+     * New Action
+     */
+    public function newAction()
     {
         $args = $this->getRequest()->getArgv();
         if (isset($args[1]) && $args[1] == 'new') {
@@ -72,5 +84,26 @@ class Cli extends \Shade\Controller
         } else {
             return $this->render('system/cli/cli_layout.phtml');
         }
+    }
+
+    /**
+     * Run Action
+     */
+    public function runAction()
+    {
+        $args = $this->getRequest()->getArgv();
+        if (!isset($args[2], $args[3])) {
+            $response = new Response();
+            $response->setContent("Usage: run MyController myAction [ arg1 arg2 ...]\n");
+            return $response;
+        }
+        $actionArgs = array_slice($args, 4);
+        $serviceProvider = $this->serviceProvider();
+        $request = new VirtualRequest($serviceProvider, $args[2], $args[3], $actionArgs);
+        $response = $this->serviceProvider()->getApp()->execute($request);
+        if ($response->getCode() == 404) {
+            $response->setContent("Wrong arguments provided\n");
+        }
+        return $response;
     }
 }

@@ -145,12 +145,6 @@ class App
             throw new Exception('Mode does not supported');
         }
         $response = $this->execute($request);
-        if (!$response instanceof Response) {
-            throw new Exception(
-                "Executed controller hasn't returned instance of \\Shade\\Response. "
-                .ucfirst(gettype($response)).' has been returned.'
-            );
-        }
         $this->output($response);
     }
 
@@ -158,6 +152,8 @@ class App
      * Execute Application and return Response
      *
      * @param \Shade\Request $request Request
+     *
+     * @throws \Shade\Exception
      *
      * @return \Shade\Response
      */
@@ -180,12 +176,17 @@ class App
          * @var Response $response
          */
         $response = call_user_func_array(array($controller, $route->action()), $route->args());
+        if (!$response instanceof Response) {
+            throw new Exception(
+                "Executed controller hasn't returned instance of \\Shade\\Response. "
+                .ucfirst(gettype($response)).' has been returned.'
+            );
+        }
         if (!$response->getCode()) {
             $response->setCode(200);
         }
 
         return $response;
-
     }
 
     /**
