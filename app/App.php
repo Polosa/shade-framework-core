@@ -29,11 +29,6 @@ namespace Shade;
 class App
 {
     /**
-     * Required PHP version
-     */
-    const REQUIRED_PHP_VERSION = '5.3.0';
-
-    /**
      * Application modes
      */
     const
