@@ -103,7 +103,7 @@ class Cli extends \Shade\Controller
             file_put_contents($destinationPath, $content);
         }
 
-        return $response->setContent("Skeleton application '$applicationName' generated and stored under '$applicationRootPath'");
+        return $response->setContent("Skeleton application '$applicationName' generated and stored under '$applicationRootPath'\n");
     }
 
     /**
