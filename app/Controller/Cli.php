@@ -26,7 +26,7 @@ class Cli extends \Shade\Controller
      */
     public function indexAction()
     {
-        return $this->render('system/cli/cli_layout.phtml');
+        return $this->render('system/cli/index.phtml');
     }
 
     /**
@@ -35,55 +35,75 @@ class Cli extends \Shade\Controller
     public function newAction()
     {
         $args = $this->getRequest()->getArgv();
-        if (isset($args[1]) && $args[1] == 'new') {
-            $skeletonPathIsExistingFile = false;
-            $errorWhenCreatingDir = false;
-            if (count($args) == 4) {
-                $appDir = $this->serviceProvider()->getApp()->getAppDir();
-                $skeletonTemplatesDir = $appDir.'/skeleton';
-                $skeletonName = $args[2];
-                $skeletonPath = $args[3];
-                $viewReplace = $this->serviceProvider()->getView('\Shade\View\Replace');
-                $classLoaderReflection = new \ReflectionClass('\Composer\Autoload\ClassLoader');
-                $autoloadPath = dirname(dirname($classLoaderReflection->getFileName())).'/autoload.php';
-                $replaces = array(
-                    'ShadeApp' => $skeletonName,
-                    '%ShadePath%' => $appDir,
-                    '%autoloadPath%' => $autoloadPath
-                );
-                if (file_exists($skeletonPath)) {
-                    $skeletonPathIsExistingFile = !is_dir($skeletonPath);
-                } else {
-                    $errorWhenCreatingDir = !mkdir($skeletonPath, 0775, true);
+        $actionArgs = array_slice($args, 2);
+        $config = array(
+            'applicationName' => array(
+                'value' => 'ShadeApp',
+                'description' => 'Specify your application name, e.g. MyApp'
+            ),
+            'applicationRootPath' => array(
+                'value' => './ShadeApp',
+                'description' => 'Set path to store your application files'
+            ),
+        );
+        $argIndex = 0;
+        $interactiveMode = count($actionArgs) < count($config);
+        foreach ($config as $configKey => &$configEntry) {
+            if (isset($actionArgs[$argIndex])) {
+                $configEntry['value'] = $actionArgs[$argIndex];
+            } elseif ($configKey == 'applicationRootPath') {
+                $configEntry['value'] = "./{$config['applicationName']['value']}";
+            }
+            if ($interactiveMode) {
+                echo "{$configEntry['description']} or press Enter to use '{$configEntry['value']}': ";
+                $userInput = trim(fgets(STDIN));
+                if ($userInput) {
+                    $configEntry['value'] = $userInput;
                 }
+            }
+            $argIndex++;
+        }
 
-                if (!$skeletonPathIsExistingFile && !$errorWhenCreatingDir) {
-                    foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($skeletonTemplatesDir, \FilesystemIterator::SKIP_DOTS)) as $fileInfo) {
-                        $filePath = $fileInfo->getPathname();
-                        $content = $viewReplace->render($filePath, $replaces);
-                        $destinationPath = $skeletonPath.str_replace($skeletonTemplatesDir, '', $filePath);
-                        $destinationDir = dirname($destinationPath);
-                        if (!is_dir($destinationDir)) {
-                            mkdir($destinationDir, 0775, true);
-                        }
-                        file_put_contents($destinationPath, $content);
-                    }
-                }
-            } else {
-                $wrongArgs = true;
+        $applicationName = $config['applicationName']['value'];
+        $applicationRootPath = $config['applicationRootPath']['value'];
+        $response = new Response();
+
+        $appDir = $this->serviceProvider()->getApp()->getAppDir();
+        $skeletonTemplatesDir = $appDir.'/skeleton';
+        $viewReplace = $this->serviceProvider()->getView('\Shade\View\Replace');
+        $classLoaderReflection = new \ReflectionClass('\Composer\Autoload\ClassLoader');
+        $autoloadPath = dirname(dirname($classLoaderReflection->getFileName())).'/autoload.php';
+        $replaces = array(
+            'ShadeApp' => $applicationName,
+            '%ShadePath%' => $appDir,
+            '%autoloadPath%' => $autoloadPath
+        );
+        if (file_exists($applicationRootPath)) {
+            if (!is_dir($applicationRootPath)) {
+                return $response->setContent("'$applicationRootPath' exists and it is not a directory\n");
             }
 
-            return $this->render('system/cli/new.phtml', array(
-                'skeletonName' => !empty($skeletonName) ? $skeletonName : null,
-                'skeletonPath' => !empty($skeletonPath) ? $skeletonPath : null,
-                'skeletonPathIsExistingFile' => $skeletonPathIsExistingFile,
-                'errorWhenCreatingDir' => $errorWhenCreatingDir,
-                'wrongArgs' => !empty($wrongArgs),
-                'cliFileName' => $args[0],
-            ));
+            if (count(scandir($applicationRootPath)) !== 2) {
+                return $response->setContent("Directory '$applicationRootPath' is not empty\n");
+            }
         } else {
-            return $this->render('system/cli/cli_layout.phtml');
+            if (!mkdir($applicationRootPath, 0775, true)) {
+                return $response->setContent("Can't create application directory $applicationRootPath\n");
+            }
         }
+
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($skeletonTemplatesDir, \FilesystemIterator::SKIP_DOTS)) as $fileInfo) {
+            $filePath = $fileInfo->getPathname();
+            $content = $viewReplace->render($filePath, $replaces);
+            $destinationPath = $applicationRootPath.str_replace($skeletonTemplatesDir, '', $filePath);
+            $destinationDir = dirname($destinationPath);
+            if (!is_dir($destinationDir)) {
+                mkdir($destinationDir, 0775, true);
+            }
+            file_put_contents($destinationPath, $content);
+        }
+
+        return $response->setContent("Skeleton application '$applicationName' generated and stored under '$applicationRootPath'");
     }
 
     /**

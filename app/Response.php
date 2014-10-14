@@ -56,10 +56,13 @@ class Response
      * Set page content
      *
      * @param string $content Data to set
+     *
+     * @return \Shade\Response
      */
     public function setContent($content)
     {
         $this->content = $content;
+        return $this;
     }
 
     /**
@@ -76,10 +79,13 @@ class Response
      * Set header
      *
      * @param string $header Header
+     *
+     * @return \Shade\Response
      */
     public function setHeader($header)
     {
         $this->headers[] = $header;
+        return $this;
     }
 
     /**
@@ -94,10 +100,13 @@ class Response
      * Set response code
      *
      * @param int $code Code
+     *
+     * @return \Shade\Response
      */
     public function setCode($code)
     {
         $this->code = $code;
+        return $this;
     }
 
     /**

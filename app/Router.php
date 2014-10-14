@@ -122,8 +122,8 @@ class Router
             $destination = (empty($destination) || $destination === '/') ? $request::DEFAULT_DESTINATION : $destination;
             $defaultController = self::DEFAULT_WEB_CONTROLLER;
         } elseif ($request instanceof Request\Cli) {
-            $server = $request->getServer();
-            $destination = isset($server['argv'][1]) ? $server['argv'][1] : $request::DEFAULT_DESTINATION;
+            $argv = $request->getArgv();
+            $destination = isset($argv[1]) ? $argv[1] : $request::DEFAULT_DESTINATION;
             $defaultController = self::DEFAULT_CLI_CONTROLLER;
         } elseif ($request instanceof Request\Virtual) {
             if (!method_exists($request->getController(), $request->getAction())) {
