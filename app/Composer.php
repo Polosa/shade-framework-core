@@ -22,9 +22,7 @@ class Composer
      */
     public static function generateSkeleton()
     {
-        $app = new App();
-        $serviceProvider = new ServiceProvider($app);
-        $request = new Request\Cli($serviceProvider, array('argv' => array(1 => 'new')));
-        $app->output($app->execute($request));
+        $dir = dirname(__DIR__);
+        passthru("$dir/shade-cli.php new");
     }
 }
