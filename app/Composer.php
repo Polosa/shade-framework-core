@@ -22,7 +22,8 @@ class Composer
      */
     public static function generateSkeleton()
     {
-        $dir = dirname(__DIR__);
-        passthru("$dir/shade-cli.php new");
+        $cliDir = dirname(__DIR__);
+        $phpBin = PHP_BINARY;
+        passthru("$phpBin $cliDir/shade-cli.php new");
     }
 }
