@@ -26,7 +26,17 @@ class Cli extends \Shade\Controller
      */
     public function indexAction()
     {
-        return $this->render('system/cli/index.phtml');
+        return $this->help();
+    }
+
+    /**
+     * Help Action
+     */
+    public function helpAction()
+    {
+        $args = $this->getRequest()->getArgv();
+        $command = !empty($args[2]) ? $args[2] : 'help';
+        return $this->help($command);
     }
 
     /**
@@ -113,9 +123,7 @@ class Cli extends \Shade\Controller
     {
         $args = $this->getRequest()->getArgv();
         if (!isset($args[2], $args[3])) {
-            $response = new Response();
-            $response->setContent("Usage: run MyController myAction [ arg1 arg2 ...]\n");
-            return $response;
+            return $this->help('run');
         }
         $actionArgs = array_slice($args, 4);
         $serviceProvider = $this->serviceProvider();
@@ -125,5 +133,58 @@ class Cli extends \Shade\Controller
             $response->setContent("Wrong arguments provided\n");
         }
         return $response;
+    }
+
+    /**
+     * Help
+     *
+     * @param string|null $command
+     *
+     * @return Response
+     */
+    protected function help($command = null)
+    {
+        $data = array(
+            'description' => 'Shade Framework CLI',
+            'usage' => 'command [arguments]',
+            'arguments' => array(
+                'new' => 'Generate new Skeleton Application',
+                'help' => 'Display help for a command',
+                'run' => "Run Controller Action in CLI mode",
+            ),
+        );
+
+        switch ($command) {
+            case 'new':
+                $data = array(
+                    'description' => 'Generate new Skeleton Application',
+                    'usage' => 'new [applicationName] [applicationRootPath]',
+                    'arguments' => array(
+                        'applicationName' => 'Will be used as a namespace for the new application',
+                        'applicationRootPath' => 'Path to the new application root'
+                    ),
+                );
+                break;
+            case 'run':
+                $data = array(
+                    'description' => "Run Controller Action in CLI mode",
+                    'usage' => 'run controllerClassName actionMethodName [arg1] ... [argN]',
+                    'arguments' => array(
+                        'controllerClassName' => 'Fully qualified class name',
+                        'actionMethodName' => 'Action name'
+                    ),
+                );
+                break;
+            case 'help':
+                $data = array(
+                    'description' => "Display help for a command",
+                    'usage' => 'help [command]',
+                    'arguments' => array(
+                        'command' => 'CLI command name',
+                    ),
+                );
+                break;
+        }
+        return $this->render('system/cli/help.phtml', $data);
     }
 }

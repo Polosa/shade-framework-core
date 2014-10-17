@@ -1,0 +1,20 @@
+<?php
+/**
+ * Cli help template
+ *
+ * @var string $description
+ * @var string $usage
+ * @var array $arguments
+ *
+ * @see \Shade\Controller\Cli::helpAction()
+ */
+?>
+<?="$description\n"?>
+
+Usage:
+    <?="$usage\n"?>
+
+Arguments:
+<?php foreach ($arguments as $argumentName => $argumentDescription) : ?>
+    <?=$argumentName?>: <?="$argumentDescription\n"?>
+<?php endforeach ?>
