@@ -69,10 +69,14 @@ abstract class View
      *
      * @param string   $name     Name
      * @param callable $callback Callback function
+     *
+     * @return \Shade\View
      */
     protected function setHelper($name, $callback)
     {
         self::$helpers[$name] = $callback;
+
+        return $this;
     }
 
     /**

@@ -33,27 +33,23 @@ class Php extends View
         $view = $this;
 
         $this->setHelper(
-            'inc',
-            function ($templates, array $data = array()) use ($view) {
-                return $view->render($templates, $data);
-            }
-        );
+                'inc',
+                function ($templates, array $data = array()) use ($view) {
+                    return $view->render($templates, $data);
+                }
+            )->setHelper(
+                'exe',
+                function ($controller, $action, array $args = array(), array $get = array()) use ($serviceProvider) {
+                    $request = new VirtualRequest($serviceProvider, $controller, $action, $args, $get);
 
-        $this->setHelper(
-            'exe',
-            function ($controller, $action, array $args = array(), array $get = array()) use ($serviceProvider) {
-                $request = new VirtualRequest($serviceProvider, $controller, $action, $args, $get);
-
-                return $serviceProvider->getApp()->execute($request)->getContent();
-            }
-        );
-
-        $this->setHelper(
-            'url',
-            function ($controller, $action, array $args = array(), array $get = array()) use ($serviceProvider) {
-                return $serviceProvider->getRouter()->buildUrl($controller, $action, $args, $get);
-            }
-        );
+                    return $serviceProvider->getApp()->execute($request)->getContent();
+                }
+            )->setHelper(
+                'url',
+                function ($controller, $action, array $args = array(), array $get = array()) use ($serviceProvider) {
+                    return $serviceProvider->getRouter()->buildUrl($controller, $action, $args, $get);
+                }
+            );
     }
 
     /**

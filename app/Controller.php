@@ -35,20 +35,28 @@ abstract class Controller
      * Set Service Provider
      *
      * @param \Shade\ServiceProvider $serviceProvider
+     *
+     * @return \Shade\Controller
      */
     public function setServiceProvider(ServiceProvider $serviceProvider)
     {
         $this->serviceProvider = $serviceProvider;
+
+        return $this;
     }
 
     /**
      * Set Request
      *
      * @param \Shade\Request $request
+     *
+     * @return \Shade\Controller
      */
     public function setRequest(Request $request)
     {
         $this->request = $request;
+
+        return $this;
     }
 
     /**

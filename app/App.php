@@ -111,8 +111,9 @@ class App
         } else {
             $this->config = $defaults;
         }
-        $this->setErrorReporting();
-        $this->setupDebugging();
+        $this
+            ->setErrorReporting()
+            ->setupDebugging();
         $this->serviceProvider = new ServiceProvider($this);
     }
 
@@ -259,6 +260,8 @@ class App
      * Setup Router
      *
      * @param Request $request
+     *
+     * @return \Shade\App
      */
     protected function setupRouter(Request $request)
     {
@@ -268,16 +271,22 @@ class App
                 $router->enableCleanUrls();
             }
         }
+
+        return $this;
     }
 
     /**
      * Add paths to "include path"
      *
      * @param string|array $paths Path or paths
+     *
+     * @return \Shade\App
      */
     private function addIncludePath($paths)
     {
         set_include_path(get_include_path().PATH_SEPARATOR.implode(PATH_SEPARATOR, (array) $paths));
+
+        return $this;
     }
 
     /**
@@ -294,6 +303,8 @@ class App
 
     /**
      * Set error reporting and logging
+     *
+     * @return \Shade\App
      */
     private function setErrorReporting()
     {
@@ -308,10 +319,14 @@ class App
             ini_set('display_errors', 'Off');
             ini_set('log_errors', 'Off');
         }
+
+        return $this;
     }
 
     /**
      * Setup Debugging
+     *
+     * @return \Shade\App
      */
     private function setupDebugging()
     {
@@ -363,5 +378,7 @@ class App
             function p() {}
             function v() {}
         }
+
+        return $this;
     }
 }
