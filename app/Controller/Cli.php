@@ -20,6 +20,51 @@ use Shade\Response;
  */
 class Cli extends \Shade\Controller
 {
+    /**
+     * Help information
+     *
+     * @var array
+     */
+    protected static $help = array(
+        'new' => array(
+            'description' => 'Generate new Skeleton Application',
+            'usage' => 'new [applicationName] [applicationRootPath]',
+            'arguments' => array(
+                'applicationName' => 'Will be used as a namespace for the new application',
+                'applicationRootPath' => 'Path to the new application root'
+            )
+        ),
+        'run' => array(
+            'description' => "Run Controller Action in CLI mode",
+            'usage' => 'run controllerClassName actionMethodName [arg1] ... [argN]',
+            'arguments' => array(
+                'controllerClassName' => 'Fully qualified class name',
+                'actionMethodName' => 'Action name'
+            ),
+        ),
+        'help' => array(
+            'description' => "Display help for a command",
+            'usage' => 'help [command]',
+            'arguments' => array(
+                'command' => 'CLI command name',
+            ),
+        ),
+    );
+
+    /**
+     * Fallback help
+     *
+     * @var array
+     */
+    protected static $fallbackHelp = array(
+        'description' => 'Shade Framework CLI',
+        'usage' => 'command [arguments]',
+        'arguments' => array(
+            'new' => 'Generate new Skeleton Application',
+            'help' => 'Display help for a command',
+            'run' => "Run Controller Action in CLI mode",
+        ),
+    );
 
     /**
      * Index Action
@@ -144,47 +189,12 @@ class Cli extends \Shade\Controller
      */
     protected function help($command = null)
     {
-        $data = array(
-            'description' => 'Shade Framework CLI',
-            'usage' => 'command [arguments]',
-            'arguments' => array(
-                'new' => 'Generate new Skeleton Application',
-                'help' => 'Display help for a command',
-                'run' => "Run Controller Action in CLI mode",
-            ),
-        );
-
-        switch ($command) {
-            case 'new':
-                $data = array(
-                    'description' => 'Generate new Skeleton Application',
-                    'usage' => 'new [applicationName] [applicationRootPath]',
-                    'arguments' => array(
-                        'applicationName' => 'Will be used as a namespace for the new application',
-                        'applicationRootPath' => 'Path to the new application root'
-                    ),
-                );
-                break;
-            case 'run':
-                $data = array(
-                    'description' => "Run Controller Action in CLI mode",
-                    'usage' => 'run controllerClassName actionMethodName [arg1] ... [argN]',
-                    'arguments' => array(
-                        'controllerClassName' => 'Fully qualified class name',
-                        'actionMethodName' => 'Action name'
-                    ),
-                );
-                break;
-            case 'help':
-                $data = array(
-                    'description' => "Display help for a command",
-                    'usage' => 'help [command]',
-                    'arguments' => array(
-                        'command' => 'CLI command name',
-                    ),
-                );
-                break;
+        if ($command && isset(self::$help[$command])) {
+            $data = self::$help[$command];
+        } else {
+            $data = self::$fallbackHelp;
         }
+
         return $this->render('system/cli/help.phtml', $data);
     }
 }
