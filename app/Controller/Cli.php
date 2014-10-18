@@ -31,15 +31,15 @@ class Cli extends \Shade\Controller
             'usage' => 'new [applicationName] [applicationRootPath]',
             'arguments' => array(
                 'applicationName' => 'Will be used as a namespace for the new application',
-                'applicationRootPath' => 'Path to the new application root'
-            )
+                'applicationRootPath' => 'Path to the new application root',
+            ),
         ),
         'run' => array(
             'description' => "Run Controller Action in CLI mode",
             'usage' => 'run controllerClassName actionMethodName [arg1] ... [argN]',
             'arguments' => array(
                 'controllerClassName' => 'Fully qualified class name',
-                'actionMethodName' => 'Action name'
+                'actionMethodName' => 'Action name',
             ),
         ),
         'help' => array(
@@ -81,6 +81,7 @@ class Cli extends \Shade\Controller
     {
         $args = $this->getRequest()->getArgv();
         $command = !empty($args[2]) ? $args[2] : 'help';
+
         return $this->help($command);
     }
 
@@ -94,11 +95,11 @@ class Cli extends \Shade\Controller
         $config = array(
             'applicationName' => array(
                 'value' => 'ShadeApp',
-                'description' => 'Specify your application name, e.g. MyApp'
+                'description' => 'Specify your application name, e.g. MyApp',
             ),
             'applicationRootPath' => array(
                 'value' => './ShadeApp',
-                'description' => 'Set path to store your application files'
+                'description' => 'Set path to store your application files',
             ),
         );
         $argIndex = 0;
@@ -131,7 +132,7 @@ class Cli extends \Shade\Controller
         $replaces = array(
             'ShadeApp' => $applicationName,
             '%ShadePath%' => $appDir,
-            '%autoloadPath%' => $autoloadPath
+            '%autoloadPath%' => $autoloadPath,
         );
         if (file_exists($applicationRootPath)) {
             if (!is_dir($applicationRootPath)) {
@@ -177,6 +178,7 @@ class Cli extends \Shade\Controller
         if ($response->getCode() == 404) {
             $response->setContent("Wrong arguments provided\n");
         }
+
         return $response;
     }
 

@@ -106,8 +106,6 @@ class ServiceProvider
      *
      * @param string $implementation Class name of the View
      *
-     * @throws \Shade\Exception
-     *
      * @return \Shade\View
      */
     public function getView($implementation = self::DEFAULT_VIEW_IMPLEMENTATION)
@@ -128,6 +126,7 @@ class ServiceProvider
 
             if ($view instanceof View) {
                 $this->views[$implementation] = $view;
+
                 return $view;
             }
         }

@@ -43,6 +43,7 @@ class Php extends View
             'exe',
             function ($controller, $action, array $args = array(), array $get = array()) use ($serviceProvider) {
                 $request = new VirtualRequest($serviceProvider, $controller, $action, $args, $get);
+
                 return $serviceProvider->getApp()->execute($request)->getContent();
             }
         );

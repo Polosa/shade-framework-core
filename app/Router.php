@@ -130,6 +130,7 @@ class Router
                 throw new Exception("Method {$request->getAction()} does not exists in class {$request->getAction()}");
             }
             $this->validateActionArguments($request->getController(), $request->getAction(), $request->getActionArgs());
+
             return new Route($request->getController(), $request->getAction(), $request->getActionArgs());
         } else {
             throw new Exception('Request type not supported');
@@ -318,7 +319,7 @@ class Router
         $reflectionActionReqArgsNum = $reflectionAction->getNumberOfRequiredParameters();
 
         if ($actionArgsNum < $reflectionActionReqArgsNum || $actionArgsNum > $reflectionActionArgsNum) {
-            throw new Exception('Wrong number of arguments provided for ' . $controller . '::' . $action);
+            throw new Exception('Wrong number of arguments provided for '.$controller.'::'.$action);
         }
     }
 }

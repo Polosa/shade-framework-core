@@ -131,7 +131,7 @@ class App
     public function run()
     {
         $appMode = $this->getMode();
-        if ($appMode == self::MODE_WEB){
+        if ($appMode == self::MODE_WEB) {
             $request = Request\Web::makeFromGlobals($this->serviceProvider);
             $this->setupRouter($request);
         } elseif ($appMode == self::MODE_CLI) {
@@ -160,6 +160,7 @@ class App
         } catch (Exception $e) {
             $response = new Response();
             $response->setCode(404);
+
             return $response;
         }
         $controllerClass = $route->controller();

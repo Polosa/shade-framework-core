@@ -62,6 +62,7 @@ class Response
     public function setContent($content)
     {
         $this->content = $content;
+
         return $this;
     }
 
@@ -85,6 +86,7 @@ class Response
     public function setHeader($header)
     {
         $this->headers[] = $header;
+
         return $this;
     }
 
@@ -106,6 +108,7 @@ class Response
     public function setCode($code)
     {
         $this->code = $code;
+
         return $this;
     }
 
