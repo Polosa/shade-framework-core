@@ -7,7 +7,6 @@
  * @author  Denis Shapkin <i@denis-shapkin.ru>
  */
 
-//TODO CLI: interactive skeleton generation
 //TODO CLI: generate apache, nginx, fastcgi configs, hosts
 //TODO CLI: dev - ./phpcs -n --standard=PSR2 ...
 //TODO CLI: dev - ./php-cs-fixer fix ...

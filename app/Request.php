@@ -53,11 +53,11 @@ abstract class Request
     protected $files = array();
 
     /**
-     * Headers
+     * ENV
      *
      * @var array
      */
-    protected $headers = array();
+    protected $env = array();
 
     /**
      * Array of arguments passed to script
@@ -121,6 +121,16 @@ abstract class Request
     public function getFiles()
     {
         return $this->files;
+    }
+
+    /**
+     * Get Environment
+     *
+     * @return array
+     */
+    public function getEnv()
+    {
+        return $this->env;
     }
 
     /**

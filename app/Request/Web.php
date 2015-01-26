@@ -39,7 +39,7 @@ class Web extends Request
      * @param array                  $post
      * @param array                  $cookie
      * @param array                  $files
-     * @param array                  $headers
+     * @param array                  $env
      */
     public function __construct(
         ServiceProvider $serviceProvider,
@@ -48,7 +48,7 @@ class Web extends Request
         array $post = array(),
         array $cookie = array(),
         array $files = array(),
-        array $headers = array()
+        array &$env = array()
     ) {
         $this->serviceProvider = $serviceProvider;
 
@@ -57,7 +57,7 @@ class Web extends Request
         $this->post = $post;
         $this->cookie = $cookie;
         $this->files = $files;
-        $this->headers = $headers;
+        $this->env = $env;
     }
 
     /**
@@ -76,7 +76,7 @@ class Web extends Request
             $_POST,
             $_COOKIE,
             $_FILES,
-            getallheaders()
+            $_ENV
         );
     }
 }
