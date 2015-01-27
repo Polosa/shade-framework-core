@@ -275,6 +275,16 @@ class App
     }
 
     /**
+     * Get Router
+     *
+     * @return \Shade\Router
+     */
+    public function getRouter()
+    {
+        return $this->serviceProvider->getRouter();
+    }
+
+    /**
      * Add paths to "include path"
      *
      * @param string|array $paths Path or paths

@@ -18,11 +18,6 @@ namespace Shade;
 class ServiceProvider
 {
     /**
-     * Default View Implementation
-     */
-    const DEFAULT_VIEW_IMPLEMENTATION = '\Shade\View\Php';
-
-    /**
      * Application
      *
      * @var \Shade\App
@@ -83,14 +78,23 @@ class ServiceProvider
     /**
      * Get Router
      *
+     * @param string|null $implementation Class name of the Router
+     *
+     * @throws \Exception
+     *
      * @return \Shade\Router
      */
-    public function getRouter()
+    public function getRouter($implementation = null)
     {
+        if (!$implementation) {
+            $config = $this->app->getConfig();
+            $implementation = $config['services']['router'];
+        }
+
         if (!($this->router instanceof Router)) {
             try {
                 $this->inProgress = true;
-                $this->router = new Router($this);
+                $this->router = new $implementation($this);
                 $this->inProgress = false;
             } catch (\Exception $e) {
                 $this->inProgress = false;
@@ -104,12 +108,19 @@ class ServiceProvider
     /**
      * Get View
      *
-     * @param string $implementation Class name of the View
+     * @param string|null $implementation Class name of the View
+     *
+     * @throws \Exception
      *
      * @return \Shade\View
      */
-    public function getView($implementation = self::DEFAULT_VIEW_IMPLEMENTATION)
+    public function getView($implementation = null)
     {
+        if (!$implementation) {
+            $config = $this->app->getConfig();
+            $implementation = $config['services']['view'];
+        }
+
         if (isset($this->views[$implementation]) && $this->views[$implementation] instanceof View) {
             return $this->views[$implementation];
         }
