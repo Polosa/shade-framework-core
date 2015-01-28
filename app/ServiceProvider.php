@@ -9,6 +9,8 @@
 
 namespace Shade;
 
+use Shade\Router\RouterInterface;
+
 /**
  * Service Provider
  *
@@ -27,7 +29,7 @@ class ServiceProvider
     /**
      * Router
      *
-     * @var \Shade\Router
+     * @var \Shade\Router\RouterInterface
      */
     protected $router;
 
@@ -82,7 +84,7 @@ class ServiceProvider
      *
      * @throws \Exception
      *
-     * @return \Shade\Router
+     * @return \Shade\Router\RouterInterface
      */
     public function getRouter($implementation = null)
     {
@@ -91,7 +93,7 @@ class ServiceProvider
             $implementation = $config['services']['router'];
         }
 
-        if (!($this->router instanceof Router)) {
+        if (!($this->router instanceof RouterInterface)) {
             try {
                 $this->inProgress = true;
                 $this->router = new $implementation($this);

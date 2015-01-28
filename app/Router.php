@@ -64,6 +64,13 @@ abstract class Router
     protected $baseControllerPath;
 
     /**
+     * Default controller
+     *
+     * @var string
+     */
+    protected $defaultController;
+
+    /**
      * Clean URLs
      *
      * @var bool
@@ -72,7 +79,6 @@ abstract class Router
 
     /**
      * Constructor
-     *
      *
      * @param \Shade\ServiceProvider $serviceProvider
      *
@@ -93,6 +99,60 @@ abstract class Router
         }
         $this->baseControllerPath = dirname($baseControllerReflection->getFileName()).'/'.self::BASE_CONTROLLER.'/';
     }
+
+    /**
+     * Build route
+     *
+     * @param \Shade\Request $request Request
+     *
+     * @throws \Shade\Exception
+     *
+     * @return \Shade\Route
+     */
+    public function route(Request $request)
+    {
+        if ($request instanceof Request\Web) {
+            $server = $request->getServer();
+            if (!isset($server['REQUEST_URI'])) {
+                throw new Exception('REQUEST_URI is not set');
+            }
+            $urlComponents = explode('?', $server['REQUEST_URI']);
+            $destination = reset($urlComponents);
+            if ($destination && (strpos($destination, $request::SCRIPT_NAME) === 0)) {
+                $destination = substr($destination, strlen($request::SCRIPT_NAME));
+            }
+            if (empty($destination) || $destination === '/') {
+                return new Route($this->baseControllerClass.'\\'.self::DEFAULT_WEB_CONTROLLER, self::DEFAULT_ACTION);
+            }
+            $this->defaultController = self::DEFAULT_WEB_CONTROLLER;
+        } elseif ($request instanceof Request\Cli) {
+            $argv = $request->getArgv();
+            if (!isset($argv[1])) {
+                return new Route($this->baseControllerClass.'\\'.self::DEFAULT_CLI_CONTROLLER, self::DEFAULT_ACTION);
+            }
+            $this->defaultController = self::DEFAULT_CLI_CONTROLLER;
+            $destination = $argv[1];
+        } elseif ($request instanceof Request\Virtual) {
+            if (!method_exists($request->getController(), $request->getAction())) {
+                throw new Exception("Method {$request->getAction()} does not exists in class {$request->getAction()}");
+            }
+            $this->validateActionArguments($request->getController(), $request->getAction(), $request->getActionArgs());
+            return new Route($request->getController(), $request->getAction(), $request->getActionArgs());
+        } else {
+            throw new Exception('Request type not supported');
+        }
+
+        return $this->getRoute(trim($destination, '/'));
+    }
+
+    /**
+     * Get Route for given destination
+     *
+     * @param $destination
+     *
+     * @return Route
+     */
+    abstract protected function getRoute($destination);
 
     /**
      * Build URL
@@ -118,42 +178,6 @@ abstract class Router
     }
 
     /**
-     * Build Destination
-     *
-     * @param string $controller Controller name
-     * @param string $action     Action name
-     * @param array  $args       Action arguments
-     *
-     * @throws \Shade\Exception
-     *
-     * @return string
-     */
-    public function buildDestination($controller, $action, array $args = array())
-    {
-        $baseClassLength = strlen($this->baseControllerClass);
-        if (substr($controller, 0, $baseClassLength + 1) !== $this->baseControllerClass.'\\') {
-            throw new Exception("Provided controller name '$controller' does not contain application Controller namespace '{$this->baseControllerClass}'");
-        } else {
-            $destination = '/'.str_replace('\\', '/', substr($controller, $baseClassLength + 1)).'/';
-        }
-        $actionSuffixLength = strlen(self::ACTION_SUFFIX);
-        if (substr($action, -$actionSuffixLength) !== self::ACTION_SUFFIX) {
-            throw new Exception('Provided action name does not contain application action suffix'.self::ACTION_SUFFIX);
-        } else {
-            if ($action !== Router::DEFAULT_ACTION) {
-                $destination .= substr($action, 0, -$actionSuffixLength).'/';
-            }
-        }
-        $destination = strtolower($destination);
-
-        if ($args) {
-            $destination .= implode('/', $args).'/';
-        }
-
-        return $destination;
-    }
-
-    /**
      * Check that requested URL is clean
      *
      * @param \Shade\Request\Web $request Request
@@ -173,16 +197,6 @@ abstract class Router
     }
 
     /**
-     * Check that clean URLs enabled
-     *
-     * @return boolean
-     */
-    public function cleanUrlsEnabled()
-    {
-        return $this->cleanUrlsEnabled;
-    }
-
-    /**
      * Enable clean URLs
      */
     public function enableCleanUrls()
@@ -196,6 +210,52 @@ abstract class Router
     public function disableCleanUrls()
     {
         $this->cleanUrlsEnabled = false;
+    }
+
+    /**
+     * Check that clean URLs enabled
+     *
+     * @return boolean
+     */
+    protected function cleanUrlsEnabled()
+    {
+        return $this->cleanUrlsEnabled;
+    }
+
+    /**
+     * Build Destination
+     *
+     * @param string $controller Controller name
+     * @param string $action     Action name
+     * @param array  $args       Action arguments
+     *
+     * @throws \Shade\Exception
+     *
+     * @return string
+     */
+    protected function buildDestination($controller, $action, array $args = array())
+    {
+        $baseClassLength = strlen($this->baseControllerClass);
+        if (substr($controller, 0, $baseClassLength + 1) !== $this->baseControllerClass.'\\') {
+            throw new Exception("Provided controller name '$controller' does not contain application Controller namespace '{$this->baseControllerClass}'");
+        } else {
+            $destination = '/'.str_replace('\\', '/', substr($controller, $baseClassLength + 1)).'/';
+        }
+        $actionSuffixLength = strlen(self::ACTION_SUFFIX);
+        if (substr($action, -$actionSuffixLength) !== self::ACTION_SUFFIX) {
+            throw new Exception('Provided action name does not contain application action suffix'.self::ACTION_SUFFIX);
+        } else {
+            if ($action !== self::DEFAULT_ACTION) {
+                $destination .= substr($action, 0, -$actionSuffixLength).'/';
+            }
+        }
+        $destination = strtolower($destination);
+
+        if ($args) {
+            $destination .= implode('/', $args).'/';
+        }
+
+        return $destination;
     }
 
     /**

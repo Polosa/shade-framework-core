@@ -20,7 +20,7 @@ use Shade\Exception;
  * @package Shade
  * @author  Denis Shapkin <i@denis-shapkin.ru>
  */
-class Regex extends Router
+class Regex extends Router implements RouterCuInterface
 {
     /**
      * Routes
@@ -30,65 +30,16 @@ class Regex extends Router
     protected $routes = array();
 
     /**
-     * Add route
+     * Get Route for given destination
      *
-     * @param string $urlPattern URL pattern
-     * @param string $action     Controller class and action name separated by "::"
-     *
-     * @return \Shade\Router\Regex
-     */
-    public function addRoute($urlPattern, $action)
-    {
-        $this->routes[$urlPattern] = $action;
-        return $this;
-    }
-
-    /**
-     * Build route
-     *
-     * @param \Shade\Request $request Request
+     * @param $destination
      *
      * @throws \Shade\Exception
      *
-     * @return \Shade\Route
+     * @return Route
      */
-    public function route(Request $request)
+    protected function getRoute($destination)
     {
-        if ($request instanceof Request\Web) {
-            $server = $request->getServer();
-            if (!isset($server['REQUEST_URI'])) {
-                throw new Exception('REQUEST_URI is not set');
-            }
-
-            $urlComponents = explode('?', $server['REQUEST_URI']);
-            $destination = reset($urlComponents);
-            if ($destination && (strpos($destination, $request::SCRIPT_NAME) === 0)) {
-                $destination = substr($destination, strlen($request::SCRIPT_NAME));
-            }
-
-            if (empty($destination) || $destination === '/') {
-                return new Route($this->baseControllerClass.'\\'.self::DEFAULT_WEB_CONTROLLER, self::DEFAULT_ACTION);
-            }
-
-        } elseif ($request instanceof Request\Cli) {
-            $argv = $request->getArgv();
-            if (!isset($argv[1])) {
-                return new Route($this->baseControllerClass.'\\'.self::DEFAULT_CLI_CONTROLLER, self::DEFAULT_ACTION);
-            }
-            $destination = $argv[1];
-        } elseif ($request instanceof Request\Virtual) {
-            if (!method_exists($request->getController(), $request->getAction())) {
-                throw new Exception("Method {$request->getAction()} does not exists in class {$request->getAction()}");
-            }
-            $this->validateActionArguments($request->getController(), $request->getAction(), $request->getActionArgs());
-
-            return new Route($request->getController(), $request->getAction(), $request->getActionArgs());
-        } else {
-            throw new Exception('Request type not supported');
-        }
-
-        $destination = trim($destination, '/');
-
         $routingFound = false;
         foreach ($this->routes as $urlPattern => $action) {
             $routingFound = preg_match($urlPattern, $destination, $matches);
@@ -123,5 +74,19 @@ class Regex extends Router
         $this->validateActionArguments($controllerClass, $action, $args);
 
         return new Route($controllerClass, $action, $args);
+    }
+
+    /**
+     * Add route
+     *
+     * @param string $urlPattern URL pattern
+     * @param string $action     Controller class and action name separated by "::"
+     *
+     * @return \Shade\Router\Regex
+     */
+    public function addRoute($urlPattern, $action)
+    {
+        $this->routes[$urlPattern] = $action;
+        return $this;
     }
 }

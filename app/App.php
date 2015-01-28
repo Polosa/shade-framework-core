@@ -266,7 +266,10 @@ class App
     {
         if ($request instanceof Request\Web) {
             $router = $this->serviceProvider->getRouter();
-            if ($router->isRequestedUrlClean($request)) {
+            if (
+                $router instanceof Router\RouterCuInterface
+                && $router->isRequestedUrlClean($request))
+            {
                 $router->enableCleanUrls();
             }
         }
@@ -277,7 +280,7 @@ class App
     /**
      * Get Router
      *
-     * @return \Shade\Router
+     * @return \Shade\Router\RouterInterface
      */
     public function getRouter()
     {
