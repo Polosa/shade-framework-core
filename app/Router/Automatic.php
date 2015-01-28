@@ -25,7 +25,7 @@ class Automatic extends Router implements RouterCuInterface
     /**
      * Get Route for given destination
      *
-     * @param $destination
+     * @param string $destination Destination
      *
      * @throws \Shade\Exception
      *

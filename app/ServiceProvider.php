@@ -36,7 +36,7 @@ class ServiceProvider
     /**
      * Views
      *
-     * @var \Shade\View[]
+     * @var \Shade\View\ViewInterface[]
      */
     protected $views = array();
 
@@ -114,7 +114,7 @@ class ServiceProvider
      *
      * @throws \Exception
      *
-     * @return \Shade\View
+     * @return \Shade\View\ViewInterface
      */
     public function getView($implementation = null)
     {
@@ -123,7 +123,7 @@ class ServiceProvider
             $implementation = $config['services']['view'];
         }
 
-        if (isset($this->views[$implementation]) && $this->views[$implementation] instanceof View) {
+        if (isset($this->views[$implementation]) && $this->views[$implementation] instanceof View\ViewInterface) {
             return $this->views[$implementation];
         }
 
@@ -137,13 +137,13 @@ class ServiceProvider
                 throw $e;
             }
 
-            if ($view instanceof View) {
+            if ($view instanceof View\ViewInterface) {
                 $this->views[$implementation] = $view;
 
                 return $view;
             }
         }
 
-        throw new Exception('Requested View implementation should be a fully qualified name of the class that inherits \Shade\View');
+        throw new Exception('Requested View implementation should be a fully qualified name of the class that implements \Shade\View\ViewInterface');
     }
 }

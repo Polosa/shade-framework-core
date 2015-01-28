@@ -17,6 +17,8 @@ namespace Shade;
  */
 abstract class View
 {
+    //TODO probably everything can be moved to \Shade\View\Php
+
     /**
      * Templates directory
      */
@@ -52,16 +54,6 @@ abstract class View
     {
         $this->serviceProvider = $serviceProvider;
         $this->templatesPath = $this->serviceProvider->getApp()->getAppDir().'/'.self::TEMPLATES_DIR.'/';
-    }
-
-    /**
-     * Get templates path
-     *
-     * @return string
-     */
-    public function getTemplatesPath()
-    {
-        return $this->templatesPath;
     }
 
     /**

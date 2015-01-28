@@ -17,7 +17,7 @@ use Shade\View;
  * @package Shade
  * @author  Denis Shapkin <i@denis-shapkin.ru>
  */
-class Replace extends View
+class Replace extends View implements ViewInterface
 {
     /**
      * Render template

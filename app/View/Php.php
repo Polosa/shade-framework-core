@@ -19,7 +19,7 @@ use Shade\Request\Virtual as VirtualRequest;
  * @package Shade
  * @author  Denis Shapkin <i@denis-shapkin.ru>
  */
-class Php extends View
+class Php extends View implements ViewInterface
 {
     /**
      * Constructor
@@ -72,6 +72,7 @@ class Php extends View
         foreach ($__templates as $__template) {
             $__template = $this->templatesPath.$__template;
 
+            //TODO how about setting include path earlier?
             if (is_readable($__template) && is_file($__template)) {
                 include $__template;
             } else {
