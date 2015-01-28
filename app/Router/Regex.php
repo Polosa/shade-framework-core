@@ -40,11 +40,12 @@ class Regex extends Router implements RouterCuInterface
      */
     protected function getRoute($destination)
     {
-        $routingFound = false;
         foreach ($this->routes as $urlPattern => $action) {
-            $routingFound = preg_match($urlPattern, $destination, $matches);
-            if ($routingFound) {
-                $actionData = explode('::', $action, 2);
+            if (preg_match($urlPattern, $destination, $matches)) {
+                $actionData = explode('::', $action);
+                if (count($actionData) !== 2) {
+                    throw new Exception("Incorrectly defined action '{$action}' for destination pattern '{$urlPattern}'");
+                }
                 $controllerClass = reset($actionData);
                 $action = end($actionData);
                 if (!class_exists($controllerClass)) {
@@ -63,11 +64,12 @@ class Regex extends Router implements RouterCuInterface
                         $args[$actionParameter->getPosition()] = $matches[$parameterName];
                     }
                 }
+
                 break;
             }
         }
 
-        if (!$routingFound) {
+        if (!isset($action)) {
             throw new Exception("Routing not found for destination '{$destination}'");
         }
 
