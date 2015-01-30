@@ -7,15 +7,17 @@
  * @author  Denis Shapkin <i@denis-shapkin.ru>
  */
 
+//TODO DI
+//TODO Logger
+//TODO Implement manual router faster than \Shade\Router\Regex; think about automatic router removal
 //TODO CLI: generate apache, nginx, fastcgi configs, hosts
 //TODO CLI: dev - ./phpcs -n --standard=PSR2 ...
-//TODO CLI: dev - ./php-cs-fixer fix ...
-//TODO realise plain routing; think about "smart" routing; may be the last one is not necessary anymore
-//TODO logging
+//TODO CLI: dev - ./php-cs-fixer fix ... (or phpcbf?)
 //TODO class to hold application config?
 //TODO remove ClassLoader and it's Exception class or extend from composer's implementation
 //TODO PHPDoc test?
 //TODO View "Replace": multiple templates rendering?
+//TODO tests
 
 namespace Shade;
 
@@ -82,6 +84,13 @@ class App
      * @var \Shade\ServiceProvider
      */
     protected $serviceProvider;
+
+    /**
+     * Services
+     *
+     * @var array
+     */
+    protected $services;
 
     /**
      * Constructor
@@ -163,7 +172,29 @@ class App
 
             return $response;
         }
+
+        //TODO refactor
         $controllerClass = $route->controller();
+        $routeArguments = $route->args();
+        $routeAssignments = $route->assignments();
+        $actionArguments = array();
+
+        $reflectionAction = new \ReflectionMethod($controllerClass, $route->action());
+        $actionParametersReflections = $reflectionAction->getParameters();
+        foreach ($actionParametersReflections as $actionParameterReflection) {
+            $parameterName = $actionParameterReflection->getName();
+            if (array_key_exists($parameterName, $routeArguments)) {
+                $actionArguments[$parameterName] = $routeArguments[$parameterName];
+            } elseif (array_key_exists($parameterName, $routeAssignments)) {
+                $parameterValue = $this->getService($routeAssignments[$parameterName]);
+                $actionArguments[$parameterName] = $parameterValue;
+            }
+        }
+        //TODO arguments validation
+
+        /**
+         * @var \Shade\Controller $controller
+         */
         $controller = new $controllerClass();
         $controller->setServiceProvider($this->serviceProvider);
         $controller->setRequest($request);
@@ -171,7 +202,7 @@ class App
         /**
          * @var Response $response
          */
-        $response = call_user_func_array(array($controller, $route->action()), $route->args());
+        $response = call_user_func_array(array($controller, $route->action()), $actionArguments);
         if (!$response instanceof Response) {
             throw new Exception(
                 "Executed controller hasn't returned instance of \\Shade\\Response. "
@@ -253,6 +284,41 @@ class App
     public function getMode()
     {
         return PHP_SAPI == "cli" ? self::MODE_CLI : self::MODE_WEB;
+    }
+
+    /**
+     * Register Service
+     *
+     * @param string   $name    Service name
+     * @param callable $service Service
+     *
+     * @return App
+     */
+    public function registerService($name, callable $service)
+    {
+        $this->services[$name] = $service;
+        return $this;
+    }
+
+    /**
+     * Get Service
+     *
+     * @param string $name Service name
+     *
+     * @throws Exception
+     *
+     * @return callable
+     */
+    public function getService($name)
+    {
+        if (array_key_exists($name, $this->services)) {
+            if (is_callable($this->services[$name])) {
+                $this->services[$name] = $this->services[$name]();
+            }
+            return $this->services[$name];
+        } else {
+            throw new Exception("Requested service {$name} is not registered");
+        }
     }
 
     /**

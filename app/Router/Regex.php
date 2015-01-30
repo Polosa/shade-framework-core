@@ -23,11 +23,18 @@ use Shade\Exception;
 class Regex extends Router implements RouterCuInterface
 {
     /**
-     * Routes
+     * Route mapping
      *
-     * @var array
+     * @var Route\Mapping[]
      */
-    protected $routes = array();
+    protected $routeMapping = array();
+
+    /**
+     * Reverse mapping
+     *
+     * @var Route\Mapping[]
+     */
+    protected $reverseMapping = array();
 
     /**
      * Get Route for given destination
@@ -40,14 +47,12 @@ class Regex extends Router implements RouterCuInterface
      */
     protected function getRoute($destination)
     {
-        foreach ($this->routes as $urlPattern => $action) {
+        foreach ($this->routeMapping as $urlPattern => $mapping) {
             if (preg_match($urlPattern, $destination, $matches)) {
-                $actionData = explode('::', $action);
-                if (count($actionData) !== 2) {
-                    throw new Exception("Incorrectly defined action '{$action}' for destination pattern '{$urlPattern}'");
-                }
-                $controllerClass = reset($actionData);
-                $action = end($actionData);
+
+                $controllerClass = $mapping->controller();
+                $action = $mapping->action();
+
                 if (!class_exists($controllerClass)) {
                     throw new Exception("Controller '{$controllerClass}' is not found");
                 }
@@ -61,7 +66,7 @@ class Regex extends Router implements RouterCuInterface
                 foreach ($actionParameters as $actionParameter) {
                     $parameterName = $actionParameter->getName();
                     if (array_key_exists($parameterName, $matches)) {
-                        $args[$actionParameter->getPosition()] = $matches[$parameterName];
+                        $args[$parameterName] = $matches[$parameterName];
                     }
                 }
 
@@ -70,25 +75,38 @@ class Regex extends Router implements RouterCuInterface
         }
 
         if (!isset($action)) {
-            throw new Exception("Routing not found for destination '{$destination}'");
+            throw new Exception("Route mapping not found for destination '{$destination}'");
         }
 
+        //TODO validation in App?
         $this->validateActionArguments($controllerClass, $action, $args);
 
-        return new Route($controllerClass, $action, $args);
+        return new Route($controllerClass, $action, $args, $mapping->assignments());
     }
 
     /**
-     * Add route
+     * Add route mapping
      *
-     * @param string $urlPattern URL pattern
-     * @param string $action     Controller class and action name separated by "::"
+     * @param string $destinationPattern Destination pattern
+     * @param string $pointer            Controller class and action name separated by "::"
      *
-     * @return \Shade\Router\Regex
+     * @throws Exception
+     *
+     * @return \Shade\Route\Mapping
      */
-    public function addRoute($urlPattern, $action)
+    public function addMapping($destinationPattern, $pointer)
     {
-        $this->routes[$urlPattern] = $action;
-        return $this;
+        $actionData = explode('::', $pointer);
+        if (count($actionData) !== 2) {
+            throw new Exception("Incorrectly defined pointer '{$pointer}' for destination pattern '{$destinationPattern}'");
+        }
+        $controllerClass = reset($actionData);
+        $actionName = end($actionData);
+
+        $mapping = new Route\Mapping($destinationPattern, $controllerClass, $actionName);
+        $this->routeMapping[$destinationPattern] = $mapping;
+        $this->reverseMapping[$pointer] = $mapping;
+
+        return $mapping;
     }
 }

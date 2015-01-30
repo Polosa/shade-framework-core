@@ -36,7 +36,14 @@ class Route
      *
      * @var array
      */
-    protected $args;
+    protected $args = array();
+
+    /**
+     * Assignments
+     *
+     * @var array
+     */
+    protected $assignments = array();
 
     /**
      * Constructor
@@ -44,12 +51,14 @@ class Route
      * @param string $controllerClassName
      * @param string $actionName
      * @param array  $args
+     * @param array  $assignments
      */
-    public function __construct($controllerClassName, $actionName, array $args = array())
+    public function __construct($controllerClassName, $actionName, array $args = array(), array $assignments = array())
     {
         $this->controller = $controllerClassName;
         $this->action = $actionName;
         $this->args = $args;
+        $this->assignments = $assignments;
     }
 
     /**
@@ -80,5 +89,15 @@ class Route
     public function args()
     {
         return $this->args;
+    }
+
+    /**
+     * Get assignments
+     *
+     * @return array
+     */
+    public function assignments()
+    {
+        return $this->assignments;
     }
 }
