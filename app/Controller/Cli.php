@@ -11,6 +11,7 @@ namespace Shade\Controller;
 
 use Shade\Request\Virtual as VirtualRequest;
 use Shade\Response;
+use Shade\View\Replace as ViewReplace;
 
 /**
  * Controller "Cli"
@@ -68,6 +69,8 @@ class Cli extends \Shade\Controller
 
     /**
      * Index Action
+     *
+     * @return \Shade\Response
      */
     public function indexAction()
     {
@@ -76,6 +79,8 @@ class Cli extends \Shade\Controller
 
     /**
      * Help Action
+     *
+     * @return \Shade\Response
      */
     public function helpAction()
     {
@@ -87,8 +92,13 @@ class Cli extends \Shade\Controller
 
     /**
      * New Action
+     *
+     * @param string      $appDir      Application directory
+     * @param ViewReplace $viewReplace View "Replace"
+     *
+     * @return \Shade\Response
      */
-    public function newAction()
+    public function newAction($appDir, ViewReplace $viewReplace)
     {
         $args = $this->getRequest()->getArgv();
         $actionArgs = array_slice($args, 2);
@@ -124,9 +134,7 @@ class Cli extends \Shade\Controller
         $applicationRootPath = $config['applicationRootPath']['value'];
         $response = new Response();
 
-        $appDir = $this->serviceProvider()->getApp()->getAppDir();
         $skeletonTemplatesDir = $appDir.'/skeleton';
-        $viewReplace = $this->serviceProvider()->getView('\Shade\View\Replace');
         $classLoaderReflection = new \ReflectionClass('\Composer\Autoload\ClassLoader');
         $autoloadPath = dirname(dirname($classLoaderReflection->getFileName())).'/autoload.php';
         $replaces = array(
@@ -164,6 +172,8 @@ class Cli extends \Shade\Controller
 
     /**
      * Run Action
+     *
+     * @return \Shade\Response
      */
     public function runAction()
     {
@@ -172,10 +182,9 @@ class Cli extends \Shade\Controller
             return $this->help('run');
         }
         $actionArgs = array_slice($args, 4);
-        $serviceProvider = $this->serviceProvider();
-        $request = new VirtualRequest($serviceProvider, $args[2], $args[3], $actionArgs);
-        $response = $this->serviceProvider()->getApp()->execute($request);
-        if ($response->getCode() == 404) {
+        $request = new VirtualRequest($args[2], $args[3], $actionArgs);
+        $response = $this->dispatch($request);
+        if ($response->getCode() !== 200) {
             $response->setContent("Wrong arguments provided\n");
         }
 
@@ -187,7 +196,7 @@ class Cli extends \Shade\Controller
      *
      * @param string|null $command
      *
-     * @return Response
+     * @return \Shade\Response
      */
     protected function help($command = null)
     {

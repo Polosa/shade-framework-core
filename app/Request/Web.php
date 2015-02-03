@@ -10,7 +10,6 @@
 namespace Shade\Request;
 
 use Shade\Request;
-use Shade\ServiceProvider;
 
 /**
  * Web Request
@@ -33,16 +32,14 @@ class Web extends Request
     /**
      * Constructor
      *
-     * @param \Shade\ServiceProvider $serviceProvider
-     * @param array                  $server
-     * @param array                  $get
-     * @param array                  $post
-     * @param array                  $cookie
-     * @param array                  $files
-     * @param array                  $env
+     * @param array $server
+     * @param array $get
+     * @param array $post
+     * @param array $cookie
+     * @param array $files
+     * @param array $env
      */
     public function __construct(
-        ServiceProvider $serviceProvider,
         array $server = array(),
         array $get = array(),
         array $post = array(),
@@ -50,8 +47,6 @@ class Web extends Request
         array $files = array(),
         array &$env = array()
     ) {
-        $this->serviceProvider = $serviceProvider;
-
         $this->server = $server;
         $this->get = $get;
         $this->post = $post;
@@ -63,14 +58,11 @@ class Web extends Request
     /**
      * Make new Request using GLOBALS
      *
-     * @param \Shade\ServiceProvider $serviceProvider
-     *
      * @return \Shade\Request\Web
      */
-    public static function makeFromGlobals(ServiceProvider $serviceProvider)
+    public static function makeFromGlobals()
     {
         return new self(
-            $serviceProvider,
             $_SERVER,
             $_GET,
             $_POST,

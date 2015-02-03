@@ -67,13 +67,6 @@ abstract class Request
     protected $argv = array();
 
     /**
-     * Service Provider
-     *
-     * @var \Shade\ServiceProvider
-     */
-    protected $serviceProvider;
-
-    /**
      * Get SERVER
      *
      * @return array

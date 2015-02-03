@@ -79,18 +79,18 @@ class App
     private $config;
 
     /**
-     * Service Provider
+     * Service Container
      *
-     * @var \Shade\ServiceProvider
+     * @var \Shade\ServiceContainer
      */
-    protected $serviceProvider;
+    protected $serviceContainer;
 
     /**
-     * Services
+     * Controller Dispatcher
      *
-     * @var array
+     * @var \Shade\ControllerDispatcher
      */
-    protected $services;
+    protected $controllerDispatcher;
 
     /**
      * Constructor
@@ -122,7 +122,8 @@ class App
         $this
             ->setErrorReporting()
             ->setupDebugging();
-        $this->serviceProvider = new ServiceProvider($this);
+        $this->serviceContainer = new ServiceContainer();
+        $this->controllerDispatcher = new ControllerDispatcher($this->serviceContainer);
     }
 
     /**
@@ -141,10 +142,10 @@ class App
     {
         $appMode = $this->getMode();
         if ($appMode == self::MODE_WEB) {
-            $request = Request\Web::makeFromGlobals($this->serviceProvider);
+            $request = Request\Web::makeFromGlobals();
             $this->setupRouter($request);
         } elseif ($appMode == self::MODE_CLI) {
-            $request = Request\Cli::makeFromGlobals($this->serviceProvider);
+            $request = Request\Cli::makeFromGlobals();
         } else {
             throw new Exception('Mode does not supported');
         }
@@ -163,57 +164,7 @@ class App
      */
     public function execute(Request $request)
     {
-        $router = $this->serviceProvider->getRouter();
-        try {
-            $route = $router->route($request);
-        } catch (Exception $e) {
-            $response = new Response();
-            $response->setCode(404);
-
-            return $response;
-        }
-
-        //TODO refactor
-        $controllerClass = $route->controller();
-        $routeArguments = $route->args();
-        $routeAssignments = $route->assignments();
-        $actionArguments = array();
-
-        $reflectionAction = new \ReflectionMethod($controllerClass, $route->action());
-        $actionParametersReflections = $reflectionAction->getParameters();
-        foreach ($actionParametersReflections as $actionParameterReflection) {
-            $parameterName = $actionParameterReflection->getName();
-            if (array_key_exists($parameterName, $routeArguments)) {
-                $actionArguments[$parameterName] = $routeArguments[$parameterName];
-            } elseif (array_key_exists($parameterName, $routeAssignments)) {
-                $parameterValue = $this->getService($routeAssignments[$parameterName]);
-                $actionArguments[$parameterName] = $parameterValue;
-            }
-        }
-        //TODO arguments validation
-
-        /**
-         * @var \Shade\Controller $controller
-         */
-        $controller = new $controllerClass();
-        $controller->setServiceProvider($this->serviceProvider);
-        $controller->setRequest($request);
-
-        /**
-         * @var Response $response
-         */
-        $response = call_user_func_array(array($controller, $route->action()), $actionArguments);
-        if (!$response instanceof Response) {
-            throw new Exception(
-                "Executed controller hasn't returned instance of \\Shade\\Response. "
-                .ucfirst(gettype($response)).' has been returned.'
-            );
-        }
-        if (!$response->getCode()) {
-            $response->setCode(200);
-        }
-
-        return $response;
+        return $this->controllerDispatcher->dispatch($request);
     }
 
     /**
@@ -289,14 +240,29 @@ class App
     /**
      * Register Service
      *
-     * @param string   $name    Service name
-     * @param callable $service Service
+     * @param string                   $name                   Service name
+     * @param ServiceProviderInterface $serviceProvider        Service Provider
+     * @param bool                     $instantiateImmediately Instantiate Service immediately
      *
      * @return App
      */
-    public function registerService($name, callable $service)
+    public function registerService($name, ServiceProviderInterface $serviceProvider, $instantiateImmediately = false)
     {
-        $this->services[$name] = $service;
+        $this->serviceContainer->registerService($name, $serviceProvider, $instantiateImmediately);
+        return $this;
+    }
+
+    /**
+     * Set Service
+     *
+     * @param string $name    Service name
+     * @param mixed  $service Service
+     *
+     * @return App
+     */
+    public function setService($name, $service)
+    {
+        $this->serviceContainer->setService($name, $service);
         return $this;
     }
 
@@ -307,18 +273,21 @@ class App
      *
      * @throws Exception
      *
-     * @return callable
+     * @return mixed
      */
     public function getService($name)
     {
-        if (array_key_exists($name, $this->services)) {
-            if (is_callable($this->services[$name])) {
-                $this->services[$name] = $this->services[$name]();
-            }
-            return $this->services[$name];
-        } else {
-            throw new Exception("Requested service {$name} is not registered");
-        }
+        return $this->serviceContainer->getService($name);
+    }
+
+    /**
+     * Get Controller Dispatcher
+     *
+     * @return ControllerDispatcher
+     */
+    public function getControllerDispatcher()
+    {
+        return $this->controllerDispatcher;
     }
 
     /**
@@ -331,7 +300,7 @@ class App
     protected function setupRouter(Request $request)
     {
         if ($request instanceof Request\Web) {
-            $router = $this->serviceProvider->getRouter();
+            $router = $this->getRouter();
             if (
                 $router instanceof Router\RouterCuInterface
                 && $router->isRequestedUrlClean($request))
@@ -350,7 +319,7 @@ class App
      */
     public function getRouter()
     {
-        return $this->serviceProvider->getRouter();
+        return $this->serviceContainer->getService(ServiceContainer::SERVICE_ROUTER);
     }
 
     /**

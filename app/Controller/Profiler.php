@@ -19,18 +19,20 @@ class Profiler extends \Shade\Controller
 {
     /**
      * Output profiler information
+     *
+     * @param string $startTime Application start time
+     * @param bool   $debugMode Is debug mode enabled
+     *
+     * @return \Shade\Response
      */
-    public function outputAction()
+    public function outputAction($startTime, $debugMode)
     {
-        $app = $this->serviceProvider()->getApp();
-        $config = $app->getConfig();
-
-        if (!empty($config['debug']['debug_mode'])) {
+        if ($debugMode) {
             $data = array(
                 'debugMode' => true,
                 'memory' => \Shade\Converter::formatBytes(memory_get_usage(true)),
                 'memoryPeak' => \Shade\Converter::formatBytes(memory_get_peak_usage(true)),
-                'execTime' => (microtime(true) - $app->getStartTime()),
+                'execTime' => (microtime(true) - $startTime),
             );
         } else {
             $data = array('debugMode' => false);

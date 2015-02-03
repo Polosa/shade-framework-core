@@ -10,8 +10,6 @@
 namespace Shade\View;
 
 use Shade\View;
-use Shade\ServiceProvider;
-use Shade\Request\Virtual as VirtualRequest;
 
 /**
  * Shade View "PHP"
@@ -21,35 +19,56 @@ use Shade\Request\Virtual as VirtualRequest;
  */
 class Php extends View implements ViewInterface
 {
+
+    /**
+     * Templates path
+     *
+     * @var string
+     */
+    protected $templatesPath;
+
+    /**
+     * Helpers
+     *
+     * @var array
+     */
+    protected static $helpers = array();
+
     /**
      * Constructor
      *
-     * @param \Shade\ServiceProvider $serviceProvider
+     * @param string $templatesPath Path to templates directory
      */
-    public function __construct(ServiceProvider $serviceProvider)
+    public function __construct($templatesPath)
     {
-        parent::__construct($serviceProvider);
+        $this->templatesPath = $templatesPath;
+    }
 
-        $view = $this;
+    /**
+     * Set helper function
+     *
+     * @param string   $name     Name
+     * @param callable $callback Callback function
+     *
+     * @return \Shade\View
+     */
+    public function setHelper($name, $callback)
+    {
+        self::$helpers[$name] = $callback;
 
-        $this->setHelper(
-                'inc',
-                function ($templates, array $data = array()) use ($view) {
-                    return $view->render($templates, $data);
-                }
-            )->setHelper(
-                'exe',
-                function ($controller, $action, array $args = array(), array $get = array()) use ($serviceProvider) {
-                    $request = new VirtualRequest($serviceProvider, $controller, $action, $args, $get);
+        return $this;
+    }
 
-                    return $serviceProvider->getApp()->execute($request)->getContent();
-                }
-            )->setHelper(
-                'url',
-                function ($controller, $action, array $args = array(), array $get = array()) use ($serviceProvider) {
-                    return $serviceProvider->getRouter()->buildUrl($controller, $action, $args, $get);
-                }
-            );
+    /**
+     * Get helper
+     *
+     * @param string $name Helper name
+     *
+     * @return callable
+     */
+    protected static function getHelper($name)
+    {
+        return self::$helpers[$name];
     }
 
     /**

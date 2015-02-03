@@ -11,4 +11,14 @@
 
 require_once 'vendor/autoload.php';
 $app = new \Shade\App();
+
+require_once 'config/di.php';
+
+$router = $app->getRouter();
+if ($router instanceof \Shade\Router\Regex) {
+    $router->addMapping('~^help$~', '\\Shade\\Controller\\Cli::helpAction');
+    $router->addMapping('~^new$~', '\\Shade\\Controller\\Cli::newAction');
+    $router->addMapping('~^run$~', '\\Shade\\Controller\\Cli::runAction');
+}
+
 $app->run();

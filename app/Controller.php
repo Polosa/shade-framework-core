@@ -9,6 +9,8 @@
 
 namespace Shade;
 
+use Shade\View\ViewInterface;
+
 /**
  * Base Controller
  *
@@ -18,13 +20,6 @@ namespace Shade;
 abstract class Controller
 {
     /**
-     * Service Provider
-     *
-     * @var \Shade\ServiceProvider
-     */
-    protected $serviceProvider;
-
-    /**
      * Request
      *
      * @var \Shade\Request
@@ -32,15 +27,29 @@ abstract class Controller
     protected $request;
 
     /**
-     * Set Service Provider
+     * View
      *
-     * @param \Shade\ServiceProvider $serviceProvider
+     * @var \Shade\View\ViewInterface
+     */
+    private $view;
+
+    /**
+     * Controller Dispatcher
+     *
+     * @var \Shade\ControllerDispatcher
+     */
+    private $controllerDispatcher;
+
+    /**
+     * Set Controller Dispatcher
+     *
+     * @param \Shade\ControllerDispatcher $controllerDispatcher
      *
      * @return \Shade\Controller
      */
-    public function setServiceProvider(ServiceProvider $serviceProvider)
+    public function setControllerDispatcher(ControllerDispatcher $controllerDispatcher)
     {
-        $this->serviceProvider = $serviceProvider;
+        $this->controllerDispatcher = $controllerDispatcher;
 
         return $this;
     }
@@ -60,13 +69,17 @@ abstract class Controller
     }
 
     /**
-     * Get Service Provider
+     * Set View
      *
-     * @return \Shade\ServiceProvider
+     * @param \Shade\View\ViewInterface $view
+     *
+     * @return \Shade\Controller
      */
-    protected function serviceProvider()
+    public function setView(ViewInterface $view)
     {
-        return $this->serviceProvider;
+        $this->view = $view;
+
+        return $this;
     }
 
     /**
@@ -87,12 +100,26 @@ abstract class Controller
      *
      * @return \Shade\Response
      */
-    public function render($templates, array $data = array())
+    protected function render($templates, array $data = array())
     {
-        $content = $this->serviceProvider->getView()->render($templates, $data);
+        $content = $this->view->render($templates, $data);
         $response = new Response();
         $response->setContent($content);
 
         return $response;
+    }
+
+    /**
+     * Dispatch
+     *
+     * @param Request $request
+     *
+     * @throws \Shade\Exception
+     *
+     * @return \Shade\Response
+     */
+    protected function dispatch(Request $request)
+    {
+        return $this->controllerDispatcher->dispatch($request);
     }
 }

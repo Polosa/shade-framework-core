@@ -10,7 +10,6 @@
 namespace Shade\Request;
 
 use Shade\Request;
-use Shade\ServiceProvider;
 
 /**
  * Virtual Request
@@ -44,20 +43,17 @@ class Virtual extends Request
     /**
      * Constructor
      *
-     * @param \Shade\ServiceProvider $serviceProvider
-     * @param string                 $controller
-     * @param string                 $action
-     * @param array                  $args
-     * @param array                  $get
+     * @param string $controller
+     * @param string $action
+     * @param array  $args
+     * @param array  $get
      */
     public function __construct(
-        ServiceProvider $serviceProvider,
         $controller,
         $action,
         array $args = array(),
         array $get = array()
     ) {
-        $this->serviceProvider = $serviceProvider;
         $this->controller = $controller;
         $this->action = $action;
         $this->args = $args;

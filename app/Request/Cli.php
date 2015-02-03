@@ -10,7 +10,6 @@
 namespace Shade\Request;
 
 use Shade\Request;
-use Shade\ServiceProvider;
 
 /**
  * CLI Request
@@ -28,15 +27,11 @@ class Cli extends Request
     /**
      * Constructor
      *
-     * @param \Shade\ServiceProvider $serviceProvider
-     * @param array                  $server
+     * @param array $server
      */
     public function __construct(
-        ServiceProvider $serviceProvider,
         array $server = array()
     ) {
-        $this->serviceProvider = $serviceProvider;
-
         $this->server = $server;
         $this->argv = isset($server['argv']) ? $server['argv'] : array();
     }
@@ -44,14 +39,11 @@ class Cli extends Request
     /**
      * Make new Request using GLOBALS
      *
-     * @param \Shade\ServiceProvider $serviceProvider
-     *
      * @return \Shade\Request\Cli
      */
-    public static function makeFromGlobals(ServiceProvider $serviceProvider)
+    public static function makeFromGlobals()
     {
         return new self(
-            $serviceProvider,
             $_SERVER
         );
     }

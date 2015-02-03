@@ -39,26 +39,17 @@ class Route
     protected $args = array();
 
     /**
-     * Assignments
-     *
-     * @var array
-     */
-    protected $assignments = array();
-
-    /**
      * Constructor
      *
      * @param string $controllerClassName
      * @param string $actionName
      * @param array  $args
-     * @param array  $assignments
      */
-    public function __construct($controllerClassName, $actionName, array $args = array(), array $assignments = array())
+    public function __construct($controllerClassName, $actionName, array $args = array())
     {
         $this->controller = $controllerClassName;
         $this->action = $actionName;
         $this->args = $args;
-        $this->assignments = $assignments;
     }
 
     /**
@@ -86,18 +77,8 @@ class Route
      *
      * @return array Arguments
      */
-    public function args()
+    public function args() //TODO check if needed
     {
         return $this->args;
-    }
-
-    /**
-     * Get assignments
-     *
-     * @return array
-     */
-    public function assignments()
-    {
-        return $this->assignments;
     }
 }

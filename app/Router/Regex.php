@@ -79,9 +79,9 @@ class Regex extends Router implements RouterCuInterface
         }
 
         //TODO validation in App?
-        $this->validateActionArguments($controllerClass, $action, $args);
+        //$this->validateActionArguments($controllerClass, $action, $args);
 
-        return new Route($controllerClass, $action, $args, $mapping->assignments());
+        return new Route($controllerClass, $action, $args);
     }
 
     /**
@@ -94,7 +94,7 @@ class Regex extends Router implements RouterCuInterface
      *
      * @return \Shade\Route\Mapping
      */
-    public function addMapping($destinationPattern, $pointer)
+    public function addMapping($destinationPattern, $pointer) //TODO pass controller and action separately?
     {
         $actionData = explode('::', $pointer);
         if (count($actionData) !== 2) {

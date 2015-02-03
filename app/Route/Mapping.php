@@ -39,26 +39,17 @@ class Mapping
     protected $action;
 
     /**
-     * Assignments
-     *
-     * @var array
-     */
-    protected $assignments = array();
-
-    /**
      * Constructor
      *
      * @param string $destinationPattern
      * @param string $controllerClassName
      * @param string $actionName
-     * @param array  $assignments
      */
-    public function __construct($destinationPattern, $controllerClassName, $actionName, array $assignments = array())
+    public function __construct($destinationPattern, $controllerClassName, $actionName)
     {
         $this->destinationPattern = $destinationPattern;
         $this->controller = $controllerClassName;
         $this->action = $actionName;
-        $this->assignments = $assignments;
     }
 
     /**
@@ -89,29 +80,5 @@ class Mapping
     public function action()
     {
         return $this->action;
-    }
-
-    /**
-     * Get assignments
-     *
-     * @return array
-     */
-    public function assignments()
-    {
-        return $this->assignments;
-    }
-
-    /**
-     * Pass Service
-     *
-     * @param string $argumentName Argument name of associated action
-     * @param string $serviceName  Registered Application Service name
-     *
-     * @return Mapping
-     */
-    public function pass($argumentName, $serviceName)
-    {
-        $this->assignments[$argumentName] = $serviceName;
-        return $this;
     }
 }

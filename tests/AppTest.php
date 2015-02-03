@@ -28,8 +28,7 @@ class AppTest extends \PHPUnit_Framework_TestCase
         $server['REQUEST_URI'] = '/profiler/output/';
 
         $app = new App();
-        $serviceProvider = new ServiceProvider($app);
-        $request = new Request\Web($serviceProvider, $server);
+        $request = new Request\Web($server);
         $response = $app->execute($request);
         $this->assertInstanceOf('\Shade\Response', $response);
         $this->assertEquals(200, $response->getCode());

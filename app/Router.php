@@ -43,13 +43,6 @@ abstract class Router
     const ACTION_SUFFIX = 'Action';
 
     /**
-     * Service Provider
-     *
-     * @var \Shade\ServiceProvider
-     */
-    protected $serviceProvider;
-
-    /**
      * Base controller class
      *
      * @var string
@@ -80,18 +73,13 @@ abstract class Router
     /**
      * Constructor
      *
-     * @param \Shade\ServiceProvider $serviceProvider
+     * @param string $baseController Base Controller class name
      *
      * @throws \Shade\Exception
      */
-    public function __construct(ServiceProvider $serviceProvider)
+    public function __construct($baseController)
     {
-        if (!$serviceProvider->inProgress()) {
-            throw new Exception('Router can be only requested from ServiceProvider');
-        }
-        $this->serviceProvider = $serviceProvider;
-        $app = $serviceProvider->getApp();
-        $this->baseControllerClass = '\\'.$app->getAppNamespace().'\\'.self::BASE_CONTROLLER;
+        $this->baseControllerClass = $baseController;
         try {
             $baseControllerReflection = new \ReflectionClass($this->baseControllerClass);
         } catch (\Exception $e) {
@@ -136,7 +124,8 @@ abstract class Router
             if (!method_exists($request->getController(), $request->getAction())) {
                 throw new Exception("Method {$request->getAction()} does not exists in class {$request->getAction()}");
             }
-            $this->validateActionArguments($request->getController(), $request->getAction(), $request->getActionArgs());
+            //TODO where the validation should be?
+            //$this->validateActionArguments($request->getController(), $request->getAction(), $request->getActionArgs());
             return new Route($request->getController(), $request->getAction(), $request->getActionArgs());
         } else {
             throw new Exception('Request type not supported');
