@@ -36,6 +36,9 @@ class App
         MODE_WEB = 'web',
         MODE_CLI = 'cli';
 
+    const
+        DEFAULT_CONFIG_PATH = 'config/app_defaults.php';
+
     /**
      * Application start time
      *
@@ -89,8 +92,6 @@ class App
      * Constructor
      *
      * @param array|null $config Configuration
-     *
-     * @throws \Shade\Exception
      */
     public function __construct($config = null)
     {
@@ -101,8 +102,7 @@ class App
         $this->appDir = dirname(dirname($appReflection->getFileName()));
         $this->appNamespace = substr($appClass, 0, strpos($appClass, '\\'));
         $this->addIncludePath(array($this->frameworkDir, $this->appDir));
-        //TODO define directories
-        $defaults = require_once 'config/app_defaults.php';
+        $defaults = require_once self::DEFAULT_CONFIG_PATH;
         if (is_array($config)) {
             $this->config = array_replace_recursive($defaults, $config);
         } else {
@@ -325,8 +325,8 @@ class App
     private function setupErrorReporting()
     {
         error_reporting($this->config['debug']['error_reporting_level']);
-        ini_set('display_errors', 'On');
-        ini_set('log_errors', 'On');
+        ini_set('display_errors', $this->config['debug']['display_errors']);
+        ini_set('log_errors', $this->config['debug']['log_errors']);
         if (!empty($this->config['debug']['error_log_path'])) {
             ini_set('error_log', $this->config['debug']['error_log_path']);
         }

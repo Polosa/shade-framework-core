@@ -6,4 +6,4 @@
 
 /* Application configuration */
 
-return array();
+return [];
