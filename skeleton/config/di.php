@@ -21,4 +21,4 @@ $app->registerService(ServiceContainer::SERVICE_VIEW, new ViewPhpServiceProvider
 $app->getControllerDispatcher()
     ->setArgumentValue('\\ShadeApp\\Controller\\Index', 'indexAction', 'appName', $app->getAppNamespace())
     ->setArgumentValue('\\ShadeApp\\Controller\\Profiler', 'outputAction', 'startTime', $app->getStartTime())
-    ->setArgumentValue('\\ShadeApp\\Controller\\Profiler', 'outputAction', 'debugMode', !empty($appConfig['debug']['debug_mode']));
+    ->setArgumentValue('\\ShadeApp\\Controller\\Profiler', 'outputAction', 'showProfiler', !empty($appConfig['debug']['profiler_enabled']));

@@ -21,13 +21,13 @@ class Profiler extends \Shade\Controller
      * Output profiler information
      *
      * @param string $startTime Application start time
-     * @param bool   $debugMode Is debug mode enabled
+     * @param bool   $showProfiler Is debug mode enabled
      *
      * @return \Shade\Response
      */
-    public function outputAction($startTime, $debugMode)
+    public function outputAction($startTime, $showProfiler)
     {
-        if ($debugMode) {
+        if ($showProfiler) {
             $data = array(
                 'debugMode' => true,
                 'memory' => \Shade\Converter::formatBytes(memory_get_usage(true)),
@@ -35,7 +35,7 @@ class Profiler extends \Shade\Controller
                 'execTime' => (microtime(true) - $startTime),
             );
         } else {
-            $data = array('debugMode' => false);
+            $data = array('showProfiler' => false);
         }
 
         return $this->render('system/profiler.phtml', $data);

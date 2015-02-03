@@ -40,19 +40,32 @@ class ServiceContainer
     protected $serviceProviders = array();
 
     /**
+     * Service configuration
+     *
+     * @var array
+     */
+    protected $serviceConfiguration = array();
+
+    /**
      * Register Service
      *
      * @param string                   $name                   Service name
      * @param ServiceProviderInterface $serviceProvider        Service Provider
+     * @param bool                     $persistent             Register as persistent: all future attempts to get Service will retrieve the same instance
      * @param bool                     $instantiateImmediately Instantiate Service immediately
      *
      * @return ServiceContainer
      */
-    public function registerService($name, ServiceProviderInterface $serviceProvider, $instantiateImmediately = false)
+    public function registerService($name, ServiceProviderInterface $serviceProvider, $persistent = true, $instantiateImmediately = false)
     {
+        $this->serviceConfiguration[$name]['persistent'] = $persistent;
         $this->serviceProviders[$name] = $serviceProvider;
+
         if ($instantiateImmediately) {
-            $this->setService($name, $serviceProvider->instantiate());
+            $service = $serviceProvider->instantiate();
+            if ($persistent) {
+                $this->setService($name, $service);
+            }
         }
         return $this;
     }
@@ -68,6 +81,7 @@ class ServiceContainer
     public function setService($name, $service)
     {
         $this->services[$name] = $service;
+        $this->serviceConfiguration[$name]['persistent'] = true;
         return $this;
     }
 
@@ -86,7 +100,9 @@ class ServiceContainer
             return $this->services[$name];
         } elseif (isset($this->serviceProviders[$name]) && $this->serviceProviders[$name] instanceof ServiceProviderInterface) {
             $service = $this->serviceProviders[$name]->instantiate();
-            $this->setService($name, $service);
+            if (!empty($this->serviceConfiguration[$name]['persistent'])) {
+                $this->setService($name, $service);
+            }
             return $service;
         } else {
             throw new Exception("Requested service {$name} is not registered");

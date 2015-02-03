@@ -26,6 +26,6 @@ $app->registerService('view_replace', new ViewReplaceServiceProvider());
 
 $app->getControllerDispatcher()
     ->setArgumentValue('\\Shade\\Controller\\Profiler', 'outputAction', 'startTime', $app->getStartTime())
-    ->setArgumentValue('\\Shade\\Controller\\Profiler', 'outputAction', 'debugMode', !empty($appConfig['debug']['debug_mode']))
+    ->setArgumentValue('\\Shade\\Controller\\Profiler', 'outputAction', 'showProfiler', !empty($appConfig['debug']['profiler_enabled']))
     ->setArgumentValue('\\Shade\\Controller\\Cli', 'newAction', 'appDir', $app->getAppDir())
     ->bindService('\\Shade\\Controller\\Cli', 'newAction', 'viewReplace', 'view_replace');

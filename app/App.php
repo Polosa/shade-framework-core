@@ -30,18 +30,11 @@ namespace Shade;
 class App
 {
     /**
-     * Application modes
+     * Application run modes
      */
     const
         MODE_WEB = 'web',
         MODE_CLI = 'cli';
-
-    /**
-     * Instance of Application was created
-     *
-     * @var bool
-     */
-    private static $init = false;
 
     /**
      * Application start time
@@ -76,7 +69,7 @@ class App
      *
      * @var array
      */
-    private $config;
+    private $config = array();
 
     /**
      * Service Container
@@ -95,16 +88,12 @@ class App
     /**
      * Constructor
      *
-     * @param string|array|null $config Configuration data or path to configuration file (ini format)
+     * @param array|null $config Configuration
      *
      * @throws \Shade\Exception
      */
     public function __construct($config = null)
     {
-        if (self::$init) {
-            throw new Exception('Only one instance of Application can be created');
-        }
-        self::$init = true;
         $this->startTime = microtime(true);
         $this->frameworkDir = dirname(__DIR__);
         $appClass = get_class($this);
@@ -112,25 +101,18 @@ class App
         $this->appDir = dirname(dirname($appReflection->getFileName()));
         $this->appNamespace = substr($appClass, 0, strpos($appClass, '\\'));
         $this->addIncludePath(array($this->frameworkDir, $this->appDir));
-        $defaults = $this->parseConfig('config/app.defaults.ini');
-        if (is_string($config)) {
-            $config = $this->parseConfig($config);
+        //TODO define directories
+        $defaults = require_once 'config/app_defaults.php';
+        if (is_array($config)) {
             $this->config = array_replace_recursive($defaults, $config);
         } else {
             $this->config = $defaults;
         }
         $this
-            ->setErrorReporting()
-            ->setupDebugging();
+            ->setupErrorReporting()
+            ->setupDebugHelpers();
         $this->serviceContainer = new ServiceContainer();
         $this->controllerDispatcher = new ControllerDispatcher($this->serviceContainer);
-    }
-
-    /**
-     * App can't be cloned
-     */
-    private function __clone()
-    {
     }
 
     /**
@@ -140,7 +122,7 @@ class App
      */
     public function run()
     {
-        $appMode = $this->getMode();
+        $appMode = $this->getRunMode();
         if ($appMode == self::MODE_WEB) {
             $request = Request\Web::makeFromGlobals();
             $this->setupRouter($request);
@@ -228,11 +210,11 @@ class App
     }
 
     /**
-     * Get Application mode
+     * Get Application run mode
      *
      * @return string
      */
-    public function getMode()
+    public function getRunMode()
     {
         return PHP_SAPI == "cli" ? self::MODE_CLI : self::MODE_WEB;
     }
@@ -337,47 +319,30 @@ class App
     }
 
     /**
-     * Parse config from ini-file
-     *
-     * @param string $path Path to file
-     *
-     * @return array
-     */
-    private function parseConfig($path)
-    {
-        return parse_ini_file($path, true);
-    }
-
-    /**
-     * Set error reporting and logging
+     * Setup error reporting and logging
      *
      * @return \Shade\App
      */
-    private function setErrorReporting()
+    private function setupErrorReporting()
     {
-        error_reporting(E_ALL | E_STRICT);
-        if (!empty($this->config['debug']['debug_mode'])) {
-            ini_set('display_errors', 'On');
-            ini_set('log_errors', 'On');
-            if (!empty($this->config['debug']['error_log_path'])) {
-                ini_set('error_log', $this->config['debug']['error_log_path']);
-            }
-        } else {
-            ini_set('display_errors', 'Off');
-            ini_set('log_errors', 'Off');
+        error_reporting($this->config['debug']['error_reporting_level']);
+        ini_set('display_errors', 'On');
+        ini_set('log_errors', 'On');
+        if (!empty($this->config['debug']['error_log_path'])) {
+            ini_set('error_log', $this->config['debug']['error_log_path']);
         }
 
         return $this;
     }
 
     /**
-     * Setup Debugging
+     * Setup Debug Helpers
      *
      * @return \Shade\App
      */
-    private function setupDebugging()
+    private function setupDebugHelpers()
     {
-        if (!empty($this->config['debug']['debug_mode'])) {
+        if (!empty($this->config['debug']['debug_helpers_enabled'])) {
             /**
              * Print variables in preformatted "print_r" style)
              *

@@ -2,7 +2,7 @@
 /**
  * Profiler output
  *
- * @var bool $debugMode
+ * @var bool     $showProfiler
  * @var int|null $execTime
  * @var int|null $memory
  * @var int|null $memoryPeak
@@ -10,7 +10,7 @@
  * @see \Shade\Controller\Profiler::outputAction()
  */
 ?>
-<?php if($debugMode) : ?>
+<?php if($showProfiler) : ?>
     <hr />
     <p>Execution time: <?=$execTime ?> sec</p>
     <p>Memory allocated: <?=$memory ?></p>
