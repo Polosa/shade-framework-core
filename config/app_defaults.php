@@ -16,7 +16,6 @@ return array(
         'display_errors' => 'Off',
         'log_errors' => 'On',
         'error_log_path' => null,
-        'debug_helpers_enabled' => false,
         'profiler_enabled' => false
     )
 );

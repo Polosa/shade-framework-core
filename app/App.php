@@ -108,9 +108,7 @@ class App
         } else {
             $this->config = $defaults;
         }
-        $this
-            ->setupErrorReporting()
-            ->setupDebugHelpers();
+        $this->setupErrorReporting();
         $this->serviceContainer = new ServiceContainer();
         $this->controllerDispatcher = new ControllerDispatcher($this->serviceContainer);
     }
@@ -331,65 +329,6 @@ class App
         ini_set('log_errors', 'On');
         if (!empty($this->config['debug']['error_log_path'])) {
             ini_set('error_log', $this->config['debug']['error_log_path']);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Setup Debug Helpers
-     *
-     * @return \Shade\App
-     */
-    private function setupDebugHelpers()
-    {
-        if (!empty($this->config['debug']['debug_helpers_enabled'])) {
-            /**
-             * Print variables in preformatted "print_r" style)
-             *
-             * @return string
-             */
-            function p()
-            {
-                $args = func_get_args();
-                if ($args) {
-                    $result = '<pre>';
-                    foreach ($args as $arg) {
-                        $result .= htmlspecialchars(print_r($arg, true)).PHP_EOL;
-                    }
-                    $result .= '</pre>';
-                } else {
-                    $result = '';
-                }
-                echo $result;
-
-                return $result;
-            }
-
-            /**
-             * Print variables in preformatted "var_dump" style)
-             *
-             * @return string
-             */
-            function v()
-            {
-                $args = func_get_args();
-                ob_start();
-                foreach ($args as $arg) {
-                    var_dump($arg);
-                    echo PHP_EOL;
-                }
-                $result = ob_get_clean();
-                if ($result && !ini_get('xdebug.overload_var_dump')) {
-                    $result = '<pre>'.htmlspecialchars($result).'</pre>';
-                }
-                echo $result;
-
-                return $result;
-            }
-        } else {
-            function p() {}
-            function v() {}
         }
 
         return $this;
