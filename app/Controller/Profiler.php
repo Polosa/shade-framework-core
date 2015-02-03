@@ -27,15 +27,14 @@ class Profiler extends \Shade\Controller
      */
     public function outputAction($startTime, $showProfiler)
     {
+        $data = array('showProfiler' => $showProfiler);
         if ($showProfiler) {
             $data = array(
-                'debugMode' => true,
+                'showProfiler' => true,
                 'memory' => \Shade\Converter::formatBytes(memory_get_usage(true)),
                 'memoryPeak' => \Shade\Converter::formatBytes(memory_get_peak_usage(true)),
                 'execTime' => (microtime(true) - $startTime),
             );
-        } else {
-            $data = array('showProfiler' => false);
         }
 
         return $this->render('system/profiler.phtml', $data);

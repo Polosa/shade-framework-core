@@ -60,7 +60,11 @@ class ControllerDispatcher
     public function dispatch(Request $request)
     {
         try {
-            $route = $this->serviceContainer->getService(ServiceContainer::SERVICE_ROUTER)->route($request);
+            /**
+             * @var \Shade\Router\RouterInterface $router
+             */
+            $router = $this->serviceContainer->getService(ServiceContainer::SERVICE_ROUTER);
+            $route = $router->route($request);
         } catch (Exception $e) {
             $response = new Response();
             $response->setCode(404);
@@ -137,7 +141,7 @@ class ControllerDispatcher
         return $this;
     }
 
-    //TODO better naming for bindService and setArgumentValue?
+    //TODO better naming for bindService?
 
     /**
      * Set value of Action's argument

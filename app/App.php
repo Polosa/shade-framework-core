@@ -224,13 +224,14 @@ class App
      *
      * @param string                   $name                   Service name
      * @param ServiceProviderInterface $serviceProvider        Service Provider
+     * @param bool                     $persistent             Register as persistent: all future attempts to get Service will retrieve the same instance
      * @param bool                     $instantiateImmediately Instantiate Service immediately
      *
      * @return App
      */
-    public function registerService($name, ServiceProviderInterface $serviceProvider, $instantiateImmediately = false)
+    public function registerService($name, ServiceProviderInterface $serviceProvider, $persistent = true, $instantiateImmediately = false)
     {
-        $this->serviceContainer->registerService($name, $serviceProvider, $instantiateImmediately);
+        $this->serviceContainer->registerService($name, $serviceProvider, $persistent, $instantiateImmediately);
         return $this;
     }
 
