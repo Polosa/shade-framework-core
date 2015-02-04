@@ -72,19 +72,16 @@ class ControllerDispatcher
             return $response;
         }
 
-        //TODO refactor
+        $this->validateRoute($route);
         $controllerClass = $route->controller();
         $actionName = $route->action();
-        $routeArguments = $route->args();
         $actionArguments = array();
 
-        $reflectionAction = new \ReflectionMethod($controllerClass, $route->action());
+        $reflectionAction = new \ReflectionMethod($controllerClass, $actionName);
         $actionParametersReflections = $reflectionAction->getParameters();
         foreach ($actionParametersReflections as $actionParameterReflection) {
             $parameterName = $actionParameterReflection->getName();
-            if (array_key_exists($parameterName, $routeArguments)) {
-                $actionArguments[$parameterName] = $routeArguments[$parameterName];
-            } elseif (
+            if (
                 !empty($this->bindings[$controllerClass][$actionName])
                 && array_key_exists($parameterName, $this->bindings[$controllerClass][$actionName]))
             {
@@ -95,13 +92,17 @@ class ControllerDispatcher
                 && array_key_exists($parameterName, $this->arguments[$controllerClass][$actionName]))
             {
                 $actionArguments[$parameterName] = $this->arguments[$controllerClass][$actionName][$parameterName];
+            } elseif ($actionParameterReflection->isOptional()) {
+                $actionArguments[$parameterName] = $actionParameterReflection->getDefaultValue();
+            } else {
+                throw new Exception("No value provided for parameter '{$parameterName}' of '{$controllerClass}::{$actionName}'");
             }
         }
-        //TODO arguments validation
 
         /**
          * @var \Shade\Controller $controller
          */
+        //TODO implement binding of constructor arguments
         $controller = new $controllerClass();
         $controller->setControllerDispatcher($this);
         $controller->setView($this->serviceContainer->getService(ServiceContainer::SERVICE_VIEW));
@@ -110,7 +111,7 @@ class ControllerDispatcher
         /**
          * @var Response $response
          */
-        $response = call_user_func_array(array($controller, $route->action()), $actionArguments);
+        $response = call_user_func_array(array($controller, $actionName), $actionArguments);
         if (!$response instanceof Response) {
             throw new Exception(
                 "Executed controller hasn't returned instance of \\Shade\\Response. "
@@ -157,5 +158,23 @@ class ControllerDispatcher
     {
         $this->arguments[$controllerName][$actionName][$argumentName] = $value;
         return $this;
+    }
+
+    /**
+     * Validate Route
+     *
+     * @param Route $route Route
+     *
+     * @throws \Shade\Exception
+     */
+    protected function validateRoute(Route $route)
+    {
+        if (!class_exists($route->controller())) {
+            throw new Exception("Controller '{$route->controller()}' not found}");
+        }
+
+        if (!method_exists($route->controller(), $route->action())) {
+            throw new Exception("Action '{$route->action()}' does not exist in controller '{$route->controller()}'");
+        }
     }
 }

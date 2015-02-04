@@ -48,40 +48,35 @@ class Regex extends Router implements RouterCuInterface
     protected function getRoute($destination)
     {
         foreach ($this->routeMapping as $urlPattern => $mapping) {
-            if (preg_match($urlPattern, $destination, $matches)) {
-
-                $controllerClass = $mapping->controller();
-                $action = $mapping->action();
-
-                if (!class_exists($controllerClass)) {
-                    throw new Exception("Controller '{$controllerClass}' is not found");
-                }
-                if (!method_exists($controllerClass, $action)) {
-                    throw new Exception("Action '{$action}' is not found in controller '{$controllerClass}'");
-                }
-
-                $args = array();
-                $reflectionAction = new \ReflectionMethod($controllerClass, $action);
-                $actionParameters = $reflectionAction->getParameters();
-                foreach ($actionParameters as $actionParameter) {
-                    $parameterName = $actionParameter->getName();
-                    if (array_key_exists($parameterName, $matches)) {
-                        $args[$parameterName] = $matches[$parameterName];
-                    }
-                }
-
+            if ($mappingFound = preg_match($urlPattern, $destination, $matches)) {
+                $this->validateRouteMapping($mapping);
                 break;
             }
         }
 
-        if (!isset($action)) {
+        if (empty($mappingFound)) {
             throw new Exception("Route mapping not found for destination '{$destination}'");
         }
 
-        //TODO validation in App?
-        //$this->validateActionArguments($controllerClass, $action, $args);
+        return new Route($mapping->controller(), $mapping->action());
+    }
 
-        return new Route($controllerClass, $action, $args);
+    /**
+     * Validate Route Mapping
+     *
+     * @param \Shade\Route\Mapping $mapping Route Mapping
+     *
+     * @throws \Shade\Exception
+     */
+    protected function validateRouteMapping(Route\Mapping $mapping)
+    {
+        if (!class_exists($mapping->controller())) {
+            throw new Exception("Controller '{$mapping->controller()}' not found}");
+        }
+
+        if (!method_exists($mapping->controller(), $mapping->action())) {
+            throw new Exception("Action '{$mapping->action()}' does not exist in controller '{$mapping->controller()}'");
+        }
     }
 
     /**

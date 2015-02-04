@@ -37,7 +37,7 @@ class Cli extends \Shade\Controller
         ),
         'run' => array(
             'description' => "Run Controller Action in CLI mode",
-            'usage' => 'run controllerClassName actionMethodName [arg1] ... [argN]',
+            'usage' => 'run controllerClassName actionMethodName',
             'arguments' => array(
                 'controllerClassName' => 'Fully qualified class name',
                 'actionMethodName' => 'Action name',
@@ -181,8 +181,7 @@ class Cli extends \Shade\Controller
         if (!isset($args[2], $args[3])) {
             return $this->help('run');
         }
-        $actionArgs = array_slice($args, 4);
-        $request = new VirtualRequest($args[2], $args[3], $actionArgs);
+        $request = new VirtualRequest($args[2], $args[3]);
         $response = $this->dispatch($request);
         if ($response->getCode() !== 200) {
             $response->setContent("Wrong arguments provided\n");

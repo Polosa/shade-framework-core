@@ -34,29 +34,19 @@ class Virtual extends Request
     protected $action;
 
     /**
-     * Action arguments
-     *
-     * @var array
-     */
-    protected $args = array();
-
-    /**
      * Constructor
      *
      * @param string $controller
      * @param string $action
-     * @param array  $args
      * @param array  $get
      */
     public function __construct(
         $controller,
         $action,
-        array $args = array(),
         array $get = array()
     ) {
         $this->controller = $controller;
         $this->action = $action;
-        $this->args = $args;
         $this->get = $get;
     }
 
@@ -78,15 +68,5 @@ class Virtual extends Request
     public function getAction()
     {
         return $this->action;
-    }
-
-    /**
-     * Get action arguments
-     *
-     * @return array
-     */
-    public function getActionArgs()
-    {
-        return $this->args;
     }
 }

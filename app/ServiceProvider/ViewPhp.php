@@ -60,8 +60,8 @@ class ViewPhp implements ServiceProviderInterface
             }
         )->setHelper(
             'exe',
-            function ($controller, $action, array $args = array(), array $get = array()) {
-                $request = new VirtualRequest($controller, $action, $args, $get);
+            function ($controller, $action, array $get = array()) {
+                $request = new VirtualRequest($controller, $action, $get);
 
                 return $this->app->getControllerDispatcher()->dispatch($request)->getContent();
             }

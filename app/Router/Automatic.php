@@ -87,9 +87,9 @@ class Automatic extends Router implements RouterCuInterface
             }
         }
 
-        $args = $parts;
-        $this->validateActionArguments($controllerClass, $action, $args);
+        //$args = $parts;
+        //$this->validateActionArguments($controllerClass, $action, $args);
 
-        return new Route($controllerClass, $action, $args);
+        return new Route($controllerClass, $action);
     }
 }

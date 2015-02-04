@@ -121,12 +121,7 @@ abstract class Router
             $this->defaultController = self::DEFAULT_CLI_CONTROLLER;
             $destination = $argv[1];
         } elseif ($request instanceof Request\Virtual) {
-            if (!method_exists($request->getController(), $request->getAction())) {
-                throw new Exception("Method {$request->getAction()} does not exists in class {$request->getAction()}");
-            }
-            //TODO where the validation should be?
-            //$this->validateActionArguments($request->getController(), $request->getAction(), $request->getActionArgs());
-            return new Route($request->getController(), $request->getAction(), $request->getActionArgs());
+            return new Route($request->getController(), $request->getAction());
         } else {
             throw new Exception('Request type not supported');
         }
@@ -155,6 +150,7 @@ abstract class Router
      */
     public function buildUrl($controller, $action, array $args = array(), array $get = array())
     {
+        //TODO fix
         $url = $this->buildDestination($controller, $action, $args);
         if (!$this->cleanUrlsEnabled()) {
             $url = Request\Web::SCRIPT_NAME.$url;
@@ -224,6 +220,7 @@ abstract class Router
      */
     protected function buildDestination($controller, $action, array $args = array())
     {
+        //TODO fix
         $baseClassLength = strlen($this->baseControllerClass);
         if (substr($controller, 0, $baseClassLength + 1) !== $this->baseControllerClass.'\\') {
             throw new Exception("Provided controller name '$controller' does not contain application Controller namespace '{$this->baseControllerClass}'");
@@ -245,26 +242,5 @@ abstract class Router
         }
 
         return $destination;
-    }
-
-    /**
-     * Validate number of arguments
-     *
-     * @param string $controller Controller class name
-     * @param string $action     Action name
-     * @param array  $args       Arguments
-     *
-     * @throws Exception
-     */
-    protected function validateActionArguments($controller, $action, $args)
-    {
-        $actionArgsNum = count($args);
-        $reflectionAction = new \ReflectionMethod($controller, $action);
-        $reflectionActionArgsNum = $reflectionAction->getNumberOfParameters();
-        $reflectionActionReqArgsNum = $reflectionAction->getNumberOfRequiredParameters();
-
-        if ($actionArgsNum < $reflectionActionReqArgsNum || $actionArgsNum > $reflectionActionArgsNum) {
-            throw new Exception('Wrong number of arguments provided for '.$controller.'::'.$action);
-        }
     }
 }

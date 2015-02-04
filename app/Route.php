@@ -32,24 +32,15 @@ class Route
     protected $action;
 
     /**
-     * Action arguments
-     *
-     * @var array
-     */
-    protected $args = array();
-
-    /**
      * Constructor
      *
      * @param string $controllerClassName
      * @param string $actionName
-     * @param array  $args
      */
-    public function __construct($controllerClassName, $actionName, array $args = array())
+    public function __construct($controllerClassName, $actionName)
     {
         $this->controller = $controllerClassName;
         $this->action = $actionName;
-        $this->args = $args;
     }
 
     /**
@@ -70,15 +61,5 @@ class Route
     public function action()
     {
         return $this->action;
-    }
-
-    /**
-     * Get arguments
-     *
-     * @return array Arguments
-     */
-    public function args() //TODO check if needed
-    {
-        return $this->args;
     }
 }
