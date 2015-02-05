@@ -32,11 +32,11 @@ class ControllerDispatcher
     protected $bindings = array();
 
     /**
-     * Arguments
+     * Argument bindings
      *
      * @var array
      */
-    protected $arguments = array();
+    protected $argumentBindings = array();
 
     /**
      * Constructor
@@ -75,35 +75,22 @@ class ControllerDispatcher
         $this->validateRoute($route);
         $controllerClass = $route->controller();
         $actionName = $route->action();
-        $actionArguments = array();
+        $actionArguments = $this->getMethodArguments($controllerClass, $actionName);
 
-        $reflectionAction = new \ReflectionMethod($controllerClass, $actionName);
-        $actionParametersReflections = $reflectionAction->getParameters();
-        foreach ($actionParametersReflections as $actionParameterReflection) {
-            $parameterName = $actionParameterReflection->getName();
-            if (
-                !empty($this->bindings[$controllerClass][$actionName])
-                && array_key_exists($parameterName, $this->bindings[$controllerClass][$actionName]))
-            {
-                $parameterValue = $this->serviceContainer->getService($this->bindings[$controllerClass][$actionName][$parameterName]);
-                $actionArguments[$parameterName] = $parameterValue;
-            } elseif (
-                !empty($this->arguments[$controllerClass][$actionName])
-                && array_key_exists($parameterName, $this->arguments[$controllerClass][$actionName]))
-            {
-                $actionArguments[$parameterName] = $this->arguments[$controllerClass][$actionName][$parameterName];
-            } elseif ($actionParameterReflection->isOptional()) {
-                $actionArguments[$parameterName] = $actionParameterReflection->getDefaultValue();
-            } else {
-                throw new Exception("No value provided for parameter '{$parameterName}' of '{$controllerClass}::{$actionName}'");
-            }
+        if (method_exists($controllerClass, '__construct')) {
+            $constructorArguments = $this->getMethodArguments($controllerClass, '__construct');
+        }
+
+        if (empty($constructorArguments)) {
+            $controller = new $controllerClass();
+        } else {
+            $controllerReflection = new \ReflectionClass($controllerClass);
+            $controller = $controllerReflection->newInstanceArgs($constructorArguments);
         }
 
         /**
          * @var \Shade\Controller $controller
          */
-        //TODO implement binding of constructor arguments
-        $controller = new $controllerClass();
         $controller->setControllerDispatcher($this);
         $controller->setView($this->serviceContainer->getService(ServiceContainer::SERVICE_VIEW));
         $controller->setRequest($request);
@@ -127,36 +114,34 @@ class ControllerDispatcher
     }
 
     /**
-     * Bind Service to Action's argument
+     * Bind Service to method argument
      *
      * @param string $controllerName Controller class name
-     * @param string $actionName     Action name
+     * @param string $methodName     Method name
      * @param string $argumentName   Argument name
      * @param string $serviceName    Registered Service name
      *
      * @return ControllerDispatcher
      */
-    public function bindService($controllerName, $actionName, $argumentName, $serviceName)
+    public function bindService($controllerName, $methodName, $argumentName, $serviceName)
     {
-        $this->bindings[$controllerName][$actionName][$argumentName] = $serviceName;
+        $this->bindings[$controllerName][$methodName][$argumentName] = $serviceName;
         return $this;
     }
 
-    //TODO better naming for bindService?
-
     /**
-     * Set value of Action's argument
+     * Set value of method argument
      *
      * @param string $controllerName Controller class name
-     * @param string $actionName     Action name
+     * @param string $methodName     Method name
      * @param string $argumentName   Argument name
      * @param string $value          Value
      *
      * @return ControllerDispatcher
      */
-    public function setArgumentValue($controllerName, $actionName, $argumentName, $value)
+    public function setArgumentValue($controllerName, $methodName, $argumentName, $value)
     {
-        $this->arguments[$controllerName][$actionName][$argumentName] = $value;
+        $this->argumentBindings[$controllerName][$methodName][$argumentName] = $value;
         return $this;
     }
 
@@ -176,5 +161,43 @@ class ControllerDispatcher
         if (!method_exists($route->controller(), $route->action())) {
             throw new Exception("Action '{$route->action()}' does not exist in controller '{$route->controller()}'");
         }
+    }
+
+    /**
+     * Get arguments of Controller's Action or constructor
+     *
+     * @param string $controllerClass Controller class name
+     * @param string $methodName      Method name
+     *
+     * @throws Exception
+     *
+     * @return array
+     */
+    protected function getMethodArguments($controllerClass, $methodName)
+    {
+        $actionArguments = array();
+
+        $reflectionAction = new \ReflectionMethod($controllerClass, $methodName);
+        $actionParametersReflections = $reflectionAction->getParameters();
+        foreach ($actionParametersReflections as $actionParameterReflection) {
+            $parameterName = $actionParameterReflection->getName();
+            if (
+                !empty($this->bindings[$controllerClass][$methodName])
+                && array_key_exists($parameterName, $this->bindings[$controllerClass][$methodName])
+            ) {
+                $parameterValue = $this->serviceContainer->getService($this->bindings[$controllerClass][$methodName][$parameterName]);
+                $actionArguments[$parameterName] = $parameterValue;
+            } elseif (
+                !empty($this->argumentBindings[$controllerClass][$methodName])
+                && array_key_exists($parameterName, $this->argumentBindings[$controllerClass][$methodName])
+            ) {
+                $actionArguments[$parameterName] = $this->argumentBindings[$controllerClass][$methodName][$parameterName];
+            } elseif ($actionParameterReflection->isOptional()) {
+                $actionArguments[$parameterName] = $actionParameterReflection->getDefaultValue();
+            } else {
+                throw new Exception("No value provided for parameter '{$parameterName}' of '{$controllerClass}::{$methodName}'");
+            }
+        }
+        return $actionArguments;
     }
 }
