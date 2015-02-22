@@ -32,7 +32,7 @@ class Regex extends Router implements RouterCuInterface
     /**
      * Reverse mapping
      *
-     * @var Route\Mapping[]
+     * @var array
      */
     protected $reverseMapping = array();
 
@@ -62,46 +62,50 @@ class Regex extends Router implements RouterCuInterface
     }
 
     /**
-     * Validate Route Mapping
-     *
-     * @param \Shade\Route\Mapping $mapping Route Mapping
-     *
-     * @throws \Shade\Exception
-     */
-    protected function validateRouteMapping(Route\Mapping $mapping)
-    {
-        if (!class_exists($mapping->controller())) {
-            throw new Exception("Controller '{$mapping->controller()}' not found}");
-        }
-
-        if (!method_exists($mapping->controller(), $mapping->action())) {
-            throw new Exception("Action '{$mapping->action()}' does not exist in controller '{$mapping->controller()}'");
-        }
-    }
-
-    /**
      * Add route mapping
      *
      * @param string $destinationPattern Destination pattern
-     * @param string $pointer            Controller class and action name separated by "::"
-     *
-     * @throws Exception
+     * @param string $controllerClass    Controller class
+     * @param string $actionName         Action name
      *
      * @return \Shade\Route\Mapping
+     *
+     * @throws Exception
      */
-    public function addMapping($destinationPattern, $pointer) //TODO pass controller and action separately?
+    public function addMapping($destinationPattern, $controllerClass, $actionName)
     {
-        $actionData = explode('::', $pointer);
-        if (count($actionData) !== 2) {
-            throw new Exception("Incorrectly defined pointer '{$pointer}' for destination pattern '{$destinationPattern}'");
-        }
-        $controllerClass = reset($actionData);
-        $actionName = end($actionData);
-
         $mapping = new Route\Mapping($destinationPattern, $controllerClass, $actionName);
         $this->routeMapping[$destinationPattern] = $mapping;
-        $this->reverseMapping[$pointer] = $mapping;
+        $this->reverseMapping[$controllerClass][$actionName] = $mapping;
 
         return $mapping;
+    }
+
+    /**
+     * Build Destination
+     *
+     * @param string $controller Controller name
+     * @param string $action     Action name
+     * @param array  $args       Action arguments
+     *
+     * @throws \Shade\Exception
+     *
+     * @return string
+     */
+    protected function buildDestination($controller, $action, array $args = array())
+    {
+        if (!isset($this->reverseMapping[$controller][$action])) {
+            throw new Exception("Route mapping not found for controller '{$controller}', action '{$action}'");
+        }
+
+        /**
+         * @var Route\Mapping $mapping
+         */
+        $mapping = $this->reverseMapping[$controller][$action];
+        $destinationPattern = $mapping->destinationPattern();
+
+        //TODO fix or remove this Router implementation
+
+        return $destinationPattern;
     }
 }

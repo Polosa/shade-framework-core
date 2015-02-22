@@ -27,7 +27,7 @@ class Profiler
      *
      * @return float
      */
-    public function benchmark(callable $code, $iterationsNumber = self::BENCHMARK_ITERATIONS_NUMBER)
+    public static function benchmark(callable $code, $iterationsNumber = self::BENCHMARK_ITERATIONS_NUMBER)
     {
         $startTime = microtime(true);
         for ($i = 1; $i < $iterationsNumber; $i++) {

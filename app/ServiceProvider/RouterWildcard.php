@@ -10,23 +10,23 @@
 namespace Shade\ServiceProvider;
 
 use Shade\ServiceProviderInterface;
-use Shade\Router\Regex;
+use Shade\Router\Wildcard;
 
 /**
- * Router "Regex" Service Provider
+ * Router "Wildcard" Service Provider
  *
  * @package Shade
  * @author  Denis Shapkin <i@denis-shapkin.ru>
  */
-class RouterRegex implements ServiceProviderInterface
+class RouterWildcard implements ServiceProviderInterface
 {
     /**
      * Instantiate Service
      *
-     * @return \Shade\Router\Regex
+     * @return \Shade\Router\Wildcard
      */
     public function instantiate()
     {
-        return new Regex();
+        return new Wildcard();
     }
 }

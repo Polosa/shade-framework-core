@@ -25,11 +25,6 @@ class Web extends Request
     const SCRIPT_NAME = '/index.php';
 
     /**
-     * Default destination
-     */
-    const DEFAULT_DESTINATION = 'index/index';
-
-    /**
      * Constructor
      *
      * @param array $server
@@ -45,7 +40,7 @@ class Web extends Request
         array $post = array(),
         array $cookie = array(),
         array $files = array(),
-        array &$env = array()
+        array $env = array()
     ) {
         $this->server = $server;
         $this->get = $get;

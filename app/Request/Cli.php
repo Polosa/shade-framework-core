@@ -20,11 +20,6 @@ use Shade\Request;
 class Cli extends Request
 {
     /**
-     * Default destination
-     */
-    const DEFAULT_DESTINATION = 'cli/index';
-
-    /**
      * Constructor
      *
      * @param array $server

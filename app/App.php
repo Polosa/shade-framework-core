@@ -9,12 +9,10 @@
 
 //TODO DI
 //TODO Logger
-//TODO Implement manual router faster than \Shade\Router\Regex; think about automatic router removal
 //TODO CLI: generate apache, nginx, fastcgi configs, hosts
 //TODO CLI: dev - ./phpcs -n --standard=PSR2 ...
 //TODO CLI: dev - ./php-cs-fixer fix ... (or phpcbf?)
 //TODO class to hold application config?
-//TODO remove ClassLoader and it's Exception class or extend from composer's implementation
 //TODO PHPDoc test?
 //TODO View "Replace": multiple templates rendering?
 //TODO tests

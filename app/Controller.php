@@ -27,6 +27,13 @@ abstract class Controller
     protected $request;
 
     /**
+     * Route
+     *
+     * @var \Shade\Route
+     */
+    protected $route;
+
+    /**
      * View
      *
      * @var \Shade\View\ViewInterface
@@ -69,6 +76,20 @@ abstract class Controller
     }
 
     /**
+     * Set Route
+     *
+     * @param \Shade\Route $route
+     *
+     * @return \Shade\Controller
+     */
+    public function setRoute(Route $route)
+    {
+        $this->route = $route;
+
+        return $this;
+    }
+
+    /**
      * Set View
      *
      * @param \Shade\View\ViewInterface $view
@@ -90,6 +111,16 @@ abstract class Controller
     protected function getRequest()
     {
         return $this->request;
+    }
+
+    /**
+     * Get Route
+     *
+     * @return \Shade\Route
+     */
+    protected function getRoute()
+    {
+        return $this->route;
     }
 
     /**

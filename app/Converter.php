@@ -18,39 +18,6 @@ namespace Shade;
 class Converter
 {
     /**
-     * Convert string in CamelCase to string in snake_case
-     *
-     * @param string $str
-     *
-     * @return string
-     */
-    public static function convertCamelToSnake($str)
-    {
-        $str[0] = strtolower($str[0]);
-
-        return preg_replace('/([A-Z])/e', "'_' . strtolower('\\1')", $str);
-    }
-
-    /**
-     * Convert string in snake_case to string in CamelCase
-     *
-     * @param string $str
-     * @param bool   $capitaliseFirstChar
-     *
-     * @return string
-     */
-    public static function convertSnakeToCamel($str, $capitaliseFirstChar = false)
-    {
-        if ($capitaliseFirstChar) {
-            $str[0] = strtoupper($str[0]);
-        }
-
-        return preg_replace('/_([a-z])/e', "strtoupper('\\1')", $str);
-    }
-
-    //TODO StudlyCase
-
-    /**
      * Convert size in bytes to human readable format
      *
      * @param integer $bytes     Size in Bytes

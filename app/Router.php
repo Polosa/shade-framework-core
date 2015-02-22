@@ -18,75 +18,11 @@ namespace Shade;
 abstract class Router
 {
     /**
-     * Default Web Controller
-     */
-    const DEFAULT_WEB_CONTROLLER = 'Index';
-
-    /**
-     * Default Cli Controller
-     */
-    const DEFAULT_CLI_CONTROLLER = 'Cli';
-
-    /**
-     * Base Controller
-     */
-    const BASE_CONTROLLER = 'Controller';
-
-    /**
-     * Default Action
-     */
-    const DEFAULT_ACTION = 'indexAction';
-
-    /**
-     * Action suffix
-     */
-    const ACTION_SUFFIX = 'Action';
-
-    /**
-     * Base controller class
-     *
-     * @var string
-     */
-    protected $baseControllerClass;
-
-    /**
-     * Controller path
-     *
-     * @var string
-     */
-    protected $baseControllerPath;
-
-    /**
-     * Default controller
-     *
-     * @var string
-     */
-    protected $defaultController;
-
-    /**
      * Clean URLs
      *
      * @var bool
      */
     protected $cleanUrlsEnabled = false;
-
-    /**
-     * Constructor
-     *
-     * @param string $baseController Base Controller class name
-     *
-     * @throws \Shade\Exception
-     */
-    public function __construct($baseController)
-    {
-        $this->baseControllerClass = $baseController;
-        try {
-            $baseControllerReflection = new \ReflectionClass($this->baseControllerClass);
-        } catch (\Exception $e) {
-            throw new Exception("Can not find base controller '{$this->baseControllerClass}'");
-        }
-        $this->baseControllerPath = dirname($baseControllerReflection->getFileName()).'/'.self::BASE_CONTROLLER.'/';
-    }
 
     /**
      * Build route
@@ -109,24 +45,19 @@ abstract class Router
             if ($destination && (strpos($destination, $request::SCRIPT_NAME) === 0)) {
                 $destination = substr($destination, strlen($request::SCRIPT_NAME));
             }
-            if (empty($destination) || $destination === '/') {
-                return new Route($this->baseControllerClass.'\\'.self::DEFAULT_WEB_CONTROLLER, self::DEFAULT_ACTION);
-            }
-            $this->defaultController = self::DEFAULT_WEB_CONTROLLER;
         } elseif ($request instanceof Request\Cli) {
             $argv = $request->getArgv();
-            if (!isset($argv[1])) {
-                return new Route($this->baseControllerClass.'\\'.self::DEFAULT_CLI_CONTROLLER, self::DEFAULT_ACTION);
-            }
-            $this->defaultController = self::DEFAULT_CLI_CONTROLLER;
-            $destination = $argv[1];
+            $destination = isset($argv[1]) ? $argv[1] : '/';
         } elseif ($request instanceof Request\Virtual) {
             return new Route($request->getController(), $request->getAction());
         } else {
             throw new Exception('Request type not supported');
         }
 
-        return $this->getRoute(trim($destination, '/'));
+        $destination = trim($destination, '/');
+        $destination = empty($destination) ? '/' : $destination;
+
+        return $this->getRoute($destination);
     }
 
     /**
@@ -137,6 +68,19 @@ abstract class Router
      * @return Route
      */
     abstract protected function getRoute($destination);
+
+    /**
+     * Build Destination
+     *
+     * @param string $controller Controller name
+     * @param string $action     Action name
+     * @param array  $args       Action arguments
+     *
+     * @throws \Shade\Exception
+     *
+     * @return string
+     */
+    abstract protected function buildDestination($controller, $action, array $args = array());
 
     /**
      * Build URL
@@ -150,7 +94,6 @@ abstract class Router
      */
     public function buildUrl($controller, $action, array $args = array(), array $get = array())
     {
-        //TODO fix
         $url = $this->buildDestination($controller, $action, $args);
         if (!$this->cleanUrlsEnabled()) {
             $url = Request\Web::SCRIPT_NAME.$url;
@@ -208,39 +151,20 @@ abstract class Router
     }
 
     /**
-     * Build Destination
+     * Validate Route Mapping
      *
-     * @param string $controller Controller name
-     * @param string $action     Action name
-     * @param array  $args       Action arguments
+     * @param \Shade\Route\Mapping $mapping Route Mapping
      *
      * @throws \Shade\Exception
-     *
-     * @return string
      */
-    protected function buildDestination($controller, $action, array $args = array())
+    protected function validateRouteMapping(Route\Mapping $mapping)
     {
-        //TODO fix
-        $baseClassLength = strlen($this->baseControllerClass);
-        if (substr($controller, 0, $baseClassLength + 1) !== $this->baseControllerClass.'\\') {
-            throw new Exception("Provided controller name '$controller' does not contain application Controller namespace '{$this->baseControllerClass}'");
-        } else {
-            $destination = '/'.str_replace('\\', '/', substr($controller, $baseClassLength + 1)).'/';
-        }
-        $actionSuffixLength = strlen(self::ACTION_SUFFIX);
-        if (substr($action, -$actionSuffixLength) !== self::ACTION_SUFFIX) {
-            throw new Exception('Provided action name does not contain application action suffix'.self::ACTION_SUFFIX);
-        } else {
-            if ($action !== self::DEFAULT_ACTION) {
-                $destination .= substr($action, 0, -$actionSuffixLength).'/';
-            }
-        }
-        $destination = strtolower($destination);
-
-        if ($args) {
-            $destination .= implode('/', $args).'/';
+        if (!class_exists($mapping->controller())) {
+            throw new Exception("Controller '{$mapping->controller()}' not found");
         }
 
-        return $destination;
+        if (!method_exists($mapping->controller(), $mapping->action())) {
+            throw new Exception("Action '{$mapping->action()}' does not exist in controller '{$mapping->controller()}'");
+        }
     }
 }

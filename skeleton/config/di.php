@@ -6,7 +6,7 @@
 
 use Shade\ServiceContainer;
 use Shade\ServiceProvider\ViewPhp as ViewPhpServiceProvider;
-use Shade\ServiceProvider\RouterRegex as RouterRegexServiceProvider;
+use Shade\ServiceProvider\RouterWildcard as RouterWildcardServiceProvider;
 
 /* Dependency Injection */
 
@@ -15,7 +15,7 @@ use Shade\ServiceProvider\RouterRegex as RouterRegexServiceProvider;
  */
 $appConfig = $app->getConfig();
 
-$app->registerService(ServiceContainer::SERVICE_ROUTER, new RouterRegexServiceProvider($app));
+$app->registerService(ServiceContainer::SERVICE_ROUTER, new RouterWildcardServiceProvider());
 $app->registerService(ServiceContainer::SERVICE_VIEW, new ViewPhpServiceProvider($app));
 
 $app->getControllerDispatcher()

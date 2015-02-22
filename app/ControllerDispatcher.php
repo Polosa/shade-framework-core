@@ -88,12 +88,19 @@ class ControllerDispatcher
             $controller = $controllerReflection->newInstanceArgs($constructorArguments);
         }
 
+        if (!($controller instanceof Controller)) {
+            throw new Exception(
+                "'{$controllerClass}' must inherit '\\Shade\\Controller'."
+            );
+        }
+
         /**
          * @var \Shade\Controller $controller
          */
         $controller->setControllerDispatcher($this);
         $controller->setView($this->serviceContainer->getService(ServiceContainer::SERVICE_VIEW));
         $controller->setRequest($request);
+        $controller->setRoute($route);
 
         /**
          * @var Response $response
@@ -155,7 +162,7 @@ class ControllerDispatcher
     protected function validateRoute(Route $route)
     {
         if (!class_exists($route->controller())) {
-            throw new Exception("Controller '{$route->controller()}' not found}");
+            throw new Exception("Controller '{$route->controller()}' not found");
         }
 
         if (!method_exists($route->controller(), $route->action())) {
