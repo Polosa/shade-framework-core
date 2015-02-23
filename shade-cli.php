@@ -5,7 +5,7 @@
  * Shade CLI runner
  *
  * @package Shade
- * @version 0.1
+ * @version 1.0.0
  * @author  Denis Shapkin <i@denis-shapkin.ru>
  */
 
