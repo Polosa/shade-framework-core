@@ -7,7 +7,8 @@
  * @author  Denis Shapkin <i@denis-shapkin.ru>
  */
 
-//TODO DI
+//TODO get main request and route in action
+//TODO service provider for multiple services
 //TODO Logger
 //TODO CLI: generate apache, nginx, fastcgi configs, hosts
 //TODO CLI: dev - ./phpcs -n --standard=PSR2 ...
