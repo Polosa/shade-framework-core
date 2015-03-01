@@ -15,12 +15,7 @@ $app = new \Shade\App();
 require_once 'config/di.php';
 
 $router = $app->getRouter();
-if ($router instanceof \Shade\Router\Regex) {
-    $router->addMapping('~^$~', '\\Shade\\Controller\\Cli', 'indexAction');
-    $router->addMapping('~^help$~', '\\Shade\\Controller\\Cli', 'helpAction');
-    $router->addMapping('~^new$~', '\\Shade\\Controller\\Cli', 'newAction');
-    $router->addMapping('~^run$~', '\\Shade\\Controller\\Cli', 'runAction');
-} elseif ($router instanceof \Shade\Router\Wildcard) {
+if ($router instanceof \Shade\Router\Wildcard) {
     $router->addMapping('/', '\\Shade\\Controller\\Cli', 'indexAction');
     $router->addMapping('help', '\\Shade\\Controller\\Cli', 'helpAction');
     $router->addMapping('new', '\\Shade\\Controller\\Cli', 'newAction');

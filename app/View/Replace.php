@@ -20,6 +20,27 @@ use Shade\View;
 class Replace extends View implements ViewInterface
 {
     /**
+     * Layout content placeholder
+     *
+     * @var string
+     */
+    protected $layoutContentPlaceholder = self::DEFAULT_LAYOUT_CONTENT_PLACEHOLDER;
+
+    /**
+     * Default layout content placeholder
+     */
+    const DEFAULT_LAYOUT_CONTENT_PLACEHOLDER = '%content%';
+
+    /**
+     * Set layout content placeholder
+     *
+     * @param string $placeholder Placeholder
+     */
+    public function setLayoutContentPlaceholder($placeholder) {
+        $this->layoutContentPlaceholder = $placeholder;
+    }
+
+    /**
      * Render template
      *
      * @param string|array $__templates Path to template or array of paths to template and layouts
@@ -31,14 +52,16 @@ class Replace extends View implements ViewInterface
      */
     public function render($__templates, array $__data = array())
     {
-        if (is_array($__templates)) {
-            throw new \Shade\Exception('Rendering of multiple templates not supported by View "Replace"');
+        $__templates = (array) $__templates;
+
+        foreach ($__templates as $__template) {
+            if (!is_readable($__template) || !is_file($__template)) {
+                throw new \Shade\Exception('Template file "'.$__template.'" does not exists');
+            }
+            $content = str_replace(array_keys($__data), $__data, file_get_contents($__template));
+            $__data[$this->layoutContentPlaceholder] = $content;
         }
 
-        if (!is_readable($__templates) && is_file($__templates)) {
-            throw new \Shade\Exception('Template file "'.$__templates.'" does not exists');
-        }
-
-        return str_replace(array_keys($__data), $__data, file_get_contents($__templates));
+        return $content;
     }
 }

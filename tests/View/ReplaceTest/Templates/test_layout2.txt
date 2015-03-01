@@ -1,0 +1,4 @@
+layout2 content before
+%content%
+%placeholder2%
+layout2 content after

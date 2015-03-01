@@ -19,18 +19,30 @@ class AppTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * Test App execution
-     *
-     * @covers \Shade\App::execute
      */
     public function testExecute()
     {
-        // Mock $_SERVER
-        $server['REQUEST_URI'] = '/profiler/output/';
-
         $app = new App();
-        $request = new Request\Web($server);
-        $response = $app->execute($request);
+
+        $response = new Response();
+        $response->setCode(200);
+        $response->setContent('test');
+
+        $controllerDispatcherMock = $this->getMockBuilder('\Shade\ControllerDispatcher')
+            ->setMethods(array('dispatch'))
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $controllerDispatcherMock
+            ->expects($this->once())
+            ->method('dispatch')
+            ->willReturn($response);
+
+        $app->setService(ServiceContainer::SERVICE_CONTROLLER_DISPATCHER, $controllerDispatcherMock);
+
+        $response = $app->execute(new Request\Web($_SERVER));
         $this->assertInstanceOf('\Shade\Response', $response);
         $this->assertEquals(200, $response->getCode());
+        $this->assertEquals('test', $response->getContent());
     }
 }

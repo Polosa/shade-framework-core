@@ -1,0 +1,2 @@
+first line content %placeholder1% more content
+second line content %placeholder2%

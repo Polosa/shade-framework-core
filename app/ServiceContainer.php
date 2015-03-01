@@ -23,7 +23,8 @@ class ServiceContainer
      */
     const
         SERVICE_VIEW = 'view',
-        SERVICE_ROUTER = 'router';
+        SERVICE_ROUTER = 'router',
+        SERVICE_CONTROLLER_DISPATCHER = 'controllerDispatcher';
 
     /**
      * Services
@@ -109,4 +110,20 @@ class ServiceContainer
         }
     }
 
+    /**
+     * Check if service is registered
+     *
+     * @param string $name Service name
+     *
+     * @return bool
+     */
+    public function isRegistered($name)
+    {
+        return
+            array_key_exists($name, $this->services)
+            || (
+                isset($this->serviceProviders[$name])
+                && $this->serviceProviders[$name] instanceof ServiceProviderInterface
+            );
+    }
 }

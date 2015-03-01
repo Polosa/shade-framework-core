@@ -1,0 +1,3 @@
+layout3 content before
+%custom_placeholder%
+layout3 content after

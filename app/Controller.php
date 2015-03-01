@@ -20,18 +20,32 @@ use Shade\View\ViewInterface;
 abstract class Controller
 {
     /**
-     * Request
+     * Current Request
      *
      * @var \Shade\Request
      */
-    protected $request;
+    protected $currentRequest;
 
     /**
-     * Route
+     * Current Route
      *
      * @var \Shade\Route
      */
-    protected $route;
+    protected $currentRoute;
+
+    /**
+     * Primary Request
+     *
+     * @var \Shade\Request
+     */
+    protected $primaryRequest;
+
+    /**
+     * Primary Route
+     *
+     * @var \Shade\Route
+     */
+    protected $primaryRoute;
 
     /**
      * View
@@ -62,29 +76,57 @@ abstract class Controller
     }
 
     /**
-     * Set Request
+     * Set current Request
      *
      * @param \Shade\Request $request
      *
      * @return \Shade\Controller
      */
-    public function setRequest(Request $request)
+    public function setCurrentRequest(Request $request)
     {
-        $this->request = $request;
+        $this->currentRequest = $request;
 
         return $this;
     }
 
     /**
-     * Set Route
+     * Set primary Request
+     *
+     * @param \Shade\Request $request
+     *
+     * @return \Shade\Controller
+     */
+    public function setPrimaryRequest(Request $request)
+    {
+        $this->primaryRequest = $request;
+
+        return $this;
+    }
+
+    /**
+     * Set current Route
      *
      * @param \Shade\Route $route
      *
      * @return \Shade\Controller
      */
-    public function setRoute(Route $route)
+    public function setCurrentRoute(Route $route)
     {
-        $this->route = $route;
+        $this->currentRoute = $route;
+
+        return $this;
+    }
+
+    /**
+     * Set primary Route
+     *
+     * @param \Shade\Route $route
+     *
+     * @return \Shade\Controller
+     */
+    public function setPrimaryRoute(Route $route)
+    {
+        $this->primaryRoute = $route;
 
         return $this;
     }
@@ -106,21 +148,33 @@ abstract class Controller
     /**
      * Get Request
      *
+     * @param bool $primary Primary Request
+     *
      * @return \Shade\Request
      */
-    protected function getRequest()
+    protected function getRequest($primary = false)
     {
-        return $this->request;
+        if ($primary) {
+            return $this->primaryRequest;
+        } else {
+            return $this->currentRequest;
+        }
     }
 
     /**
      * Get Route
      *
+     * @param bool $primary Primary Route
+     *
      * @return \Shade\Route
      */
-    protected function getRoute()
+    protected function getRoute($primary = false)
     {
-        return $this->route;
+        if ($primary) {
+            return $this->primaryRoute;
+        } else {
+            return $this->currentRoute;
+        }
     }
 
     /**

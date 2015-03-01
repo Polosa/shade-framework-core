@@ -39,6 +39,20 @@ class ControllerDispatcher
     protected $argumentBindings = array();
 
     /**
+     * Primary Request
+     *
+     * @var \Shade\Request|null
+     */
+    protected $primaryRequest;
+
+    /**
+     * Primary Route
+     *
+     * @var \Shade\Route|null
+     */
+    protected $primaryRoute;
+
+    /**
      * Constructor
      *
      * @param ServiceContainer $serviceContainer Service Container
@@ -65,6 +79,12 @@ class ControllerDispatcher
              */
             $router = $this->serviceContainer->getService(ServiceContainer::SERVICE_ROUTER);
             $route = $router->route($request);
+            if (!isset($this->primaryRequest)) {
+                $this->primaryRequest = $request;
+            }
+            if (!isset($this->primaryRoute)) {
+                $this->primaryRoute = $route;
+            }
         } catch (Exception $e) {
             $response = new Response();
             $response->setCode(404);
@@ -99,8 +119,10 @@ class ControllerDispatcher
          */
         $controller->setControllerDispatcher($this);
         $controller->setView($this->serviceContainer->getService(ServiceContainer::SERVICE_VIEW));
-        $controller->setRequest($request);
-        $controller->setRoute($route);
+        $controller->setCurrentRequest($request);
+        $controller->setCurrentRoute($route);
+        $controller->setPrimaryRequest($request);
+        $controller->setPrimaryRoute($route);
 
         /**
          * @var Response $response

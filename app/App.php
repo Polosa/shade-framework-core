@@ -7,15 +7,13 @@
  * @author  Denis Shapkin <i@denis-shapkin.ru>
  */
 
-//TODO get main request and route in action
-//TODO service provider for multiple services
+//TODO refactor error handling setup
 //TODO Logger
 //TODO CLI: generate apache, nginx, fastcgi configs, hosts
 //TODO CLI: dev - ./phpcs -n --standard=PSR2 ...
 //TODO CLI: dev - ./php-cs-fixer fix ... (or phpcbf?)
 //TODO class to hold application config?
 //TODO PHPDoc test?
-//TODO View "Replace": multiple templates rendering?
 //TODO tests
 
 namespace Shade;
@@ -81,13 +79,6 @@ class App
     protected $serviceContainer;
 
     /**
-     * Controller Dispatcher
-     *
-     * @var \Shade\ControllerDispatcher
-     */
-    protected $controllerDispatcher;
-
-    /**
      * Constructor
      *
      * @param array|null $config Configuration
@@ -109,7 +100,9 @@ class App
         }
         $this->setupErrorReporting();
         $this->serviceContainer = new ServiceContainer();
-        $this->controllerDispatcher = new ControllerDispatcher($this->serviceContainer);
+        if (!$this->serviceContainer->isRegistered(ServiceContainer::SERVICE_CONTROLLER_DISPATCHER)) {
+            $this->setService(ServiceContainer::SERVICE_CONTROLLER_DISPATCHER, new ControllerDispatcher($this->serviceContainer));
+        }
     }
 
     /**
@@ -143,7 +136,7 @@ class App
      */
     public function execute(Request $request)
     {
-        return $this->controllerDispatcher->dispatch($request);
+        return $this->getService(ServiceContainer::SERVICE_CONTROLLER_DISPATCHER)->dispatch($request);
     }
 
     /**
@@ -267,7 +260,7 @@ class App
      */
     public function getControllerDispatcher()
     {
-        return $this->controllerDispatcher;
+        return $this->getService(ServiceContainer::SERVICE_CONTROLLER_DISPATCHER);
     }
 
     /**
