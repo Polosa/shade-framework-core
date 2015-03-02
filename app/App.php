@@ -7,12 +7,11 @@
  * @author  Denis Shapkin <i@denis-shapkin.ru>
  */
 
-//TODO refactor error handling setup
+//TODO class to hold application config
 //TODO Logger
 //TODO CLI: generate apache, nginx, fastcgi configs, hosts
 //TODO CLI: dev - ./phpcs -n --standard=PSR2 ...
 //TODO CLI: dev - ./php-cs-fixer fix ... (or phpcbf?)
-//TODO class to hold application config?
 //TODO PHPDoc test?
 //TODO tests
 
@@ -83,7 +82,7 @@ class App
      *
      * @param array|null $config Configuration
      */
-    public function __construct($config = null)
+    public function __construct(array $config = null)
     {
         $this->startTime = microtime(true);
         $this->frameworkDir = dirname(__DIR__);
@@ -98,7 +97,7 @@ class App
         } else {
             $this->config = $defaults;
         }
-        $this->setupErrorReporting();
+        $this->setupErrorHandling();
         $this->serviceContainer = new ServiceContainer();
         if (!$this->serviceContainer->isRegistered(ServiceContainer::SERVICE_CONTROLLER_DISPATCHER)) {
             $this->setService(ServiceContainer::SERVICE_CONTROLLER_DISPATCHER, new ControllerDispatcher($this->serviceContainer));
@@ -314,11 +313,17 @@ class App
      *
      * @return \Shade\App
      */
-    private function setupErrorReporting()
+    private function setupErrorHandling()
     {
-        error_reporting($this->config['debug']['error_reporting_level']);
-        ini_set('display_errors', $this->config['debug']['display_errors']);
-        ini_set('log_errors', $this->config['debug']['log_errors']);
+        if (isset($this->config['debug']['error_reporting_level'])) {
+            error_reporting($this->config['debug']['error_reporting_level']);
+        }
+        if (isset($this->config['debug']['display_errors'])) {
+            ini_set('display_errors', $this->config['debug']['display_errors']);
+        }
+        if (isset($this->config['debug']['log_errors'])) {
+            ini_set('log_errors', $this->config['debug']['log_errors']);
+        }
         if (!empty($this->config['debug']['error_log_path'])) {
             ini_set('error_log', $this->config['debug']['error_log_path']);
         }
