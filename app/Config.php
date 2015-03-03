@@ -29,7 +29,7 @@ class Config
      *
      * @var mixed
      */
-    protected $value = null;
+    protected $value;
 
     /**
      * Constructor
@@ -73,13 +73,11 @@ class Config
             foreach ($this->children as $childKey => $child) {
                 $childValue = $child->getValue();
                 if (isset($childValue)) {
-                    $value[$childKey] = $child->getValue();
+                    $value[$childKey] = $childValue;
                 }
             }
-            return $value ? $value : null;
-        } else {
-            return $this->value;
         }
+        return !empty($value) ? $value : $this->value;
     }
 
     /**
