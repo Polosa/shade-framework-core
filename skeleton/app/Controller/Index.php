@@ -21,8 +21,8 @@ class Index extends \ShadeApp\Controller
     public function indexAction($appName)
     {
         return $this->render(
-            array('index.phtml', 'main_layout.phtml', 'html_layout.phtml'),
-            array('pageTitle' => $appName)
+            ['index.phtml', 'main_layout.phtml', 'html_layout.phtml'],
+            ['pageTitle' => $appName]
         );
     }
 }

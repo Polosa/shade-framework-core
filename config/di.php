@@ -18,14 +18,16 @@ use Shade\ServiceProvider\ViewReplace as ViewReplaceServiceProvider;
 /**
  * @var \Shade\App $app
  */
+
 $appConfig = $app->getConfig();
 
 $app->registerService(ServiceContainer::SERVICE_ROUTER, new RouterWildcardServiceProvider());
 $app->registerService(ServiceContainer::SERVICE_VIEW, new ViewPhpServiceProvider($app));
-$app->registerService('view_replace', new ViewReplaceServiceProvider());
+$app->registerService('view.replace', new ViewReplaceServiceProvider());
+$app->setService(ServiceContainer::SERVICE_LOGGER, $logger);
 
 $app->getControllerDispatcher()
     ->setArgumentValue('\\Shade\\Controller\\Profiler', 'outputAction', 'startTime', $app->getStartTime())
-    ->setArgumentValue('\\Shade\\Controller\\Profiler', 'outputAction', 'showProfiler', !empty($appConfig['debug']['profiler_enabled']))
+    ->setArgumentValue('\\Shade\\Controller\\Profiler', 'outputAction', 'showProfiler', $appConfig->debug->profilerEnabled->getValue())
     ->setArgumentValue('\\Shade\\Controller\\Cli', 'newAction', 'appDir', $app->getAppDir())
-    ->bindService('\\Shade\\Controller\\Cli', 'newAction', 'viewReplace', 'view_replace');
+    ->bindService('\\Shade\\Controller\\Cli', 'newAction', 'viewReplace', 'view.replace');

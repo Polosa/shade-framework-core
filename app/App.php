@@ -7,7 +7,7 @@
  * @author  Denis Shapkin <i@denis-shapkin.ru>
  */
 
-//TODO class to hold application config
+//TODO components in separate bundles
 //TODO Logger
 //TODO CLI: generate apache, nginx, fastcgi configs, hosts
 //TODO CLI: dev - ./phpcs -n --standard=PSR2 ...
@@ -17,6 +17,10 @@
 
 namespace Shade;
 
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+
 /**
  * Application
  *
@@ -25,6 +29,8 @@ namespace Shade;
  */
 class App
 {
+    use LoggerAwareTrait;
+
     /**
      * Application run modes
      */
@@ -66,9 +72,9 @@ class App
     /**
      * Application configuration
      *
-     * @var array
+     * @var \Shade\Config
      */
-    private $config = array();
+    private $config;
 
     /**
      * Service Container
@@ -80,9 +86,9 @@ class App
     /**
      * Constructor
      *
-     * @param array|null $config Configuration
+     * @param \Shade\Config|array|null $config Configuration
      */
-    public function __construct(array $config = null)
+    public function __construct($config = null)
     {
         $this->startTime = microtime(true);
         $this->frameworkDir = dirname(__DIR__);
@@ -90,14 +96,13 @@ class App
         $appReflection = new \ReflectionClass($appClass);
         $this->appDir = dirname(dirname($appReflection->getFileName()));
         $this->appNamespace = substr($appClass, 0, strpos($appClass, '\\'));
-        $this->addIncludePath(array($this->frameworkDir, $this->appDir));
-        $defaults = require_once self::DEFAULT_CONFIG_PATH;
-        if (is_array($config)) {
-            $this->config = array_replace_recursive($defaults, $config);
-        } else {
-            $this->config = $defaults;
+        $this->addIncludePath([$this->frameworkDir, $this->appDir]);
+        $this->config = new Config(require_once self::DEFAULT_CONFIG_PATH);
+        if ($config instanceof Config) {
+            $this->config->overwrite($config);
+        } elseif (is_array($config)) {
+            $this->config->overwrite(new Config($config));
         }
-        $this->setupErrorHandling();
         $this->serviceContainer = new ServiceContainer();
         if (!$this->serviceContainer->isRegistered(ServiceContainer::SERVICE_CONTROLLER_DISPATCHER)) {
             $this->setService(ServiceContainer::SERVICE_CONTROLLER_DISPATCHER, new ControllerDispatcher($this->serviceContainer));
@@ -105,23 +110,47 @@ class App
     }
 
     /**
+     * Initialize application before execution
+     */
+    protected function init()
+    {
+        if (!($this->logger instanceof LoggerInterface)) {
+            if ($this->serviceContainer->isRegistered(ServiceContainer::SERVICE_LOGGER)) {
+                $this->logger = $this->getService(ServiceContainer::SERVICE_LOGGER);
+            } else {
+                $this->logger = new NullLogger();
+            }
+        } else {
+            if (!$this->serviceContainer->isRegistered(ServiceContainer::SERVICE_LOGGER)) {
+                $this->setService(ServiceContainer::SERVICE_LOGGER, $this->logger);
+            }
+        }
+        $this->getControllerDispatcher()->setLogger($this->logger);
+    }
+
+    /**
      * Run Application and output content
+     *
+     * @param \Shade\Request|null $request Request
      *
      * @throws \Shade\Exception
      */
-    public function run()
+    public function run(Request $request = null)
     {
-        $appMode = $this->getRunMode();
-        if ($appMode == self::MODE_WEB) {
-            $request = Request\Web::makeFromGlobals();
-            $this->setupRouter($request);
-        } elseif ($appMode == self::MODE_CLI) {
-            $request = Request\Cli::makeFromGlobals();
-        } else {
-            throw new Exception('Mode does not supported');
+        $this->init();
+        $this->logger->debug('Application launched');
+        if (!($request instanceof Request)) {
+            $appMode = $this->detectRunMode();
+            if ($appMode == self::MODE_WEB) {
+                $request = Request\Web::makeFromGlobals();
+            } else {
+                $request = Request\Cli::makeFromGlobals();
+            }
         }
+        $this->setupRouter($request);
         $response = $this->execute($request);
         $this->output($response);
+        $this->logger->debug('Application execution completed');
     }
 
     /**
@@ -161,7 +190,7 @@ class App
     /**
      * Get Application configuration
      *
-     * @return array
+     * @return \Shade\Config
      */
     public function getConfig()
     {
@@ -199,11 +228,11 @@ class App
     }
 
     /**
-     * Get Application run mode
+     * Detect Application run mode
      *
      * @return string
      */
-    public function getRunMode()
+    protected function detectRunMode()
     {
         return PHP_SAPI == "cli" ? self::MODE_CLI : self::MODE_WEB;
     }
@@ -291,7 +320,7 @@ class App
      */
     public function getRouter()
     {
-        return $this->serviceContainer->getService(ServiceContainer::SERVICE_ROUTER);
+        return $this->getService(ServiceContainer::SERVICE_ROUTER);
     }
 
     /**
@@ -304,29 +333,6 @@ class App
     private function addIncludePath($paths)
     {
         set_include_path(get_include_path().PATH_SEPARATOR.implode(PATH_SEPARATOR, (array) $paths));
-
-        return $this;
-    }
-
-    /**
-     * Setup error reporting and logging
-     *
-     * @return \Shade\App
-     */
-    private function setupErrorHandling()
-    {
-        if (isset($this->config['debug']['error_reporting_level'])) {
-            error_reporting($this->config['debug']['error_reporting_level']);
-        }
-        if (isset($this->config['debug']['display_errors'])) {
-            ini_set('display_errors', $this->config['debug']['display_errors']);
-        }
-        if (isset($this->config['debug']['log_errors'])) {
-            ini_set('log_errors', $this->config['debug']['log_errors']);
-        }
-        if (!empty($this->config['debug']['error_log_path'])) {
-            ini_set('error_log', $this->config['debug']['error_log_path']);
-        }
 
         return $this;
     }

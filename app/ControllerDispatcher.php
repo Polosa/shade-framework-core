@@ -9,6 +9,8 @@
 
 namespace Shade;
 
+use Psr\Log\LoggerAwareTrait;
+
 /**
  * Controller Dispatcher
  *
@@ -17,6 +19,8 @@ namespace Shade;
  */
 class ControllerDispatcher
 {
+    use LoggerAwareTrait;
+
     /**
      * Service Container
      *
@@ -73,6 +77,7 @@ class ControllerDispatcher
      */
     public function dispatch(Request $request)
     {
+        $this->logger->debug('Dispatching request');
         try {
             /**
              * @var \Shade\Router\RouterInterface $router
@@ -81,6 +86,9 @@ class ControllerDispatcher
             $route = $router->route($request);
             if (!isset($this->primaryRequest)) {
                 $this->primaryRequest = $request;
+                $logMessage = 'Route found for primary request';
+            } else {
+                $logMessage = 'Route found for secondary request';
             }
             if (!isset($this->primaryRoute)) {
                 $this->primaryRoute = $route;
@@ -93,6 +101,14 @@ class ControllerDispatcher
         }
 
         $this->validateRoute($route);
+        $this->logger->debug(
+            $logMessage,
+            [
+                'controller' => $route->controller(),
+                'action' => $route->action(),
+                'args' => $route->args(),
+            ]
+        );
         $controllerClass = $route->controller();
         $actionName = $route->action();
         $actionArguments = $this->getMethodArguments($controllerClass, $actionName);
@@ -127,7 +143,7 @@ class ControllerDispatcher
         /**
          * @var Response $response
          */
-        $response = call_user_func_array(array($controller, $actionName), $actionArguments);
+        $response = call_user_func_array([$controller, $actionName], $actionArguments);
         if (!$response instanceof Response) {
             throw new Exception(
                 "Executed controller hasn't returned instance of \\Shade\\Response. "

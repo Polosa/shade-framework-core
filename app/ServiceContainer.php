@@ -24,7 +24,8 @@ class ServiceContainer
     const
         SERVICE_VIEW = 'view',
         SERVICE_ROUTER = 'router',
-        SERVICE_CONTROLLER_DISPATCHER = 'controllerDispatcher';
+        SERVICE_CONTROLLER_DISPATCHER = 'controllerDispatcher',
+        SERVICE_LOGGER = 'logger';
 
     /**
      * Services

@@ -43,23 +43,23 @@ class Replace extends View implements ViewInterface
     /**
      * Render template
      *
-     * @param string|array $__templates Path to template or array of paths to template and layouts
-     * @param array        $__data      Data for templates
+     * @param string|array $templates Path to template or array of paths to template and layouts
+     * @param array        $data      Data for templates
      *
      * @throws \Shade\Exception
      *
      * @return string
      */
-    public function render($__templates, array $__data = array())
+    public function render($templates, array $data = array())
     {
-        $__templates = (array) $__templates;
+        $templates = (array) $templates;
 
-        foreach ($__templates as $__template) {
-            if (!is_readable($__template) || !is_file($__template)) {
-                throw new \Shade\Exception('Template file "'.$__template.'" does not exists');
+        foreach ($templates as $template) {
+            if (!is_readable($template) || !is_file($template)) {
+                throw new \Shade\Exception('Template file "'.$template.'" does not exists');
             }
-            $content = str_replace(array_keys($__data), $__data, file_get_contents($__template));
-            $__data[$this->layoutContentPlaceholder] = $content;
+            $content = str_replace(array_keys($data), $data, file_get_contents($template));
+            $data[$this->layoutContentPlaceholder] = $content;
         }
 
         return $content;

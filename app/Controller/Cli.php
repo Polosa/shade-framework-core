@@ -26,46 +26,46 @@ class Cli extends \Shade\Controller
      *
      * @var array
      */
-    protected static $help = array(
-        'new' => array(
+    protected static $help = [
+        'new' => [
             'description' => 'Generate new Skeleton Application',
             'usage' => 'new [applicationName] [applicationRootPath]',
-            'arguments' => array(
+            'arguments' => [
                 'applicationName' => 'Will be used as a namespace for the new application',
                 'applicationRootPath' => 'Path to the new application root',
-            ),
-        ),
-        'run' => array(
+            ],
+        ],
+        'run' => [
             'description' => "Run Controller Action in CLI mode",
             'usage' => 'run controllerClassName actionMethodName',
-            'arguments' => array(
+            'arguments' => [
                 'controllerClassName' => 'Fully qualified class name',
                 'actionMethodName' => 'Action name',
-            ),
-        ),
-        'help' => array(
+            ],
+        ],
+        'help' => [
             'description' => "Display help for a command",
             'usage' => 'help [command]',
-            'arguments' => array(
+            'arguments' => [
                 'command' => 'CLI command name',
-            ),
-        ),
-    );
+            ],
+        ],
+    ];
 
     /**
      * Fallback help
      *
      * @var array
      */
-    protected static $fallbackHelp = array(
+    protected static $fallbackHelp = [
         'description' => 'Shade Framework CLI',
         'usage' => 'command [arguments]',
-        'arguments' => array(
+        'arguments' => [
             'new' => 'Generate new Skeleton Application',
             'help' => 'Display help for a command',
             'run' => "Run Controller Action in CLI mode",
-        ),
-    );
+        ],
+    ];
 
     /**
      * Index Action
@@ -102,16 +102,16 @@ class Cli extends \Shade\Controller
     {
         $args = $this->getRequest()->getArgv();
         $actionArgs = array_slice($args, 2);
-        $config = array(
-            'applicationName' => array(
+        $config = [
+            'applicationName' => [
                 'value' => 'ShadeApp',
                 'description' => 'Specify your application name, e.g. MyApp',
-            ),
-            'applicationRootPath' => array(
+            ],
+            'applicationRootPath' => [
                 'value' => './ShadeApp',
                 'description' => 'Set path to store your application files',
-            ),
-        );
+            ],
+        ];
         $argIndex = 0;
         $interactiveMode = count($actionArgs) < count($config);
         foreach ($config as $configKey => &$configEntry) {
@@ -137,11 +137,11 @@ class Cli extends \Shade\Controller
         $skeletonTemplatesDir = $appDir.'/skeleton';
         $classLoaderReflection = new \ReflectionClass('\Composer\Autoload\ClassLoader');
         $autoloadPath = dirname(dirname($classLoaderReflection->getFileName())).'/autoload.php';
-        $replaces = array(
+        $replaces = [
             'ShadeApp' => $applicationName,
             '%ShadePath%' => $appDir,
             '%autoloadPath%' => $autoloadPath,
-        );
+        ];
         if (file_exists($applicationRootPath)) {
             if (!is_dir($applicationRootPath)) {
                 return $response->setContent("'$applicationRootPath' exists and it is not a directory\n");

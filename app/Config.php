@@ -15,117 +15,29 @@ namespace Shade;
  * @package Shade
  * @author  Denis Shapkin <i@denis-shapkin.ru>
  */
-class Config
+class Config extends NestedContainer
 {
     /**
-     * Children
+     * Merge with Config
      *
-     * @var \Shade\Config[]
-     */
-    protected $children = array();
-
-    /**
-     * Value
+     * @param self $config Config to merge with
      *
-     * @var mixed
+     * @return self
      */
-    protected $value;
-
-    /**
-     * Constructor
-     *
-     * @param mixed $value
-     */
-    public function __construct($value = null)
+    public function merge($config)
     {
-        $this->setValue($value);
+        return parent::merge($config);
     }
 
     /**
-     * Set value
+     * Overwrite Config
      *
-     * @param mixed $value
+     * @param self $config Config to overwrite by
      *
-     * @return \Shade\Config
+     * @return self
      */
-    public function setValue($value)
+    public function overwrite($config)
     {
-        if (is_array($value)) {
-            foreach ($value as $childKey => $childValue) {
-                $this->children[$childKey] = new self($childValue);
-            }
-            $this->value = null;
-        } else {
-            $this->value = $value;
-        }
-        return $this;
-    }
-
-    /**
-     * Get value
-     *
-     * @return mixed
-     */
-    public function getValue()
-    {
-        if ($this->children) {
-            $value = array();
-            foreach ($this->children as $childKey => $child) {
-                $childValue = $child->getValue();
-                if (isset($childValue)) {
-                    $value[$childKey] = $childValue;
-                }
-            }
-        }
-        return !empty($value) ? $value : $this->value;
-    }
-
-    /**
-     * Get child
-     *
-     * @param string $name
-     *
-     * @return \Shade\Config
-     */
-    public function __get($name)
-    {
-        if (!array_key_exists($name, $this->children)) {
-            $this->children[$name] = new self();
-        }
-        return $this->children[$name];
-    }
-
-    /**
-     * Set child value
-     *
-     * @param string $name
-     * @param mixed  $value
-     */
-    public function __set($name, $value)
-    {
-        $this->children[$name] = new self($value);
-        $this->value = null;
-    }
-
-    /**
-     * Check is child set
-     *
-     * @param string $name
-     *
-     * @return bool
-     */
-    public function __isset($name)
-    {
-        return isset($this->children[$name]);
-    }
-
-    /**
-     * Unset child
-     *
-     * @param string $name
-     */
-    public function __unset($name)
-    {
-        unset($this->children[$name]);
+        return parent::overwrite($config);
     }
 }

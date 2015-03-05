@@ -20,10 +20,10 @@ abstract class View
     /**
      * Render template
      *
-     * @param string|array $__templates Path to template or array of paths to template and layouts
-     * @param array        $__data      Data for templates
+     * @param string|array $templates Path to template or array of paths to template and layouts
+     * @param array        $data      Data for templates
      *
      * @return string
      */
-    abstract public function render($__templates, array $__data = array());
+    abstract public function render($templates, array $data = array());
 }

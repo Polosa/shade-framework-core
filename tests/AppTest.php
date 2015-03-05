@@ -29,7 +29,7 @@ class AppTest extends \PHPUnit_Framework_TestCase
         $response->setContent('test');
 
         $controllerDispatcherMock = $this->getMockBuilder('\Shade\ControllerDispatcher')
-            ->setMethods(array('dispatch'))
+            ->setMethods(['dispatch'])
             ->disableOriginalConstructor()
             ->getMock();
 

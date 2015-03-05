@@ -37,9 +37,19 @@ class Php extends View implements ViewInterface
     /**
      * Constructor
      *
-     * @param string $templatesPath Path to templates directory
+     * @param string $templatesPath Path to templates root directory
      */
     public function __construct($templatesPath)
+    {
+        $this->setTemplatesPath($templatesPath);
+    }
+
+    /**
+     * Set templates path
+     *
+     * @param string $templatesPath Path to templates root directory
+     */
+    public function setTemplatesPath($templatesPath)
     {
         $this->templatesPath = $templatesPath;
     }
@@ -74,24 +84,23 @@ class Php extends View implements ViewInterface
     /**
      * Render template
      *
-     * @param string|array $__templates Path to template or array of paths to template and layouts
-     * @param array        $__data      Data for templates
+     * @param string|array $templates Path to template or array of paths to template and layouts
+     * @param array        $data      Data for templates
      *
      * @throws \Shade\Exception
      *
      * @return string
      */
-    public function render($__templates, array $__data = array())
+    public function render($templates, array $data = array())
     {
-        $__templates = (array) $__templates;
+        $__templates = (array) $templates;
 
-        extract($__data);
+        extract($data);
         ob_start();
 
         foreach ($__templates as $__template) {
             $__template = $this->templatesPath.$__template;
 
-            //TODO how about setting include path earlier?
             if (is_readable($__template) && is_file($__template)) {
                 include $__template;
             } else {

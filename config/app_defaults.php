@@ -12,10 +12,16 @@
 
 return [
     'debug' => [
-        'error_reporting_level' => null,
-        'display_errors' => null,
-        'log_errors' => null,
-        'error_log_path' => null,
-        'profiler_enabled' => false
-    ]
+        'profilerEnabled' => false,
+        'logging' => [
+            'logPath' => null,
+            'logErrors' => null,
+        ]
+    ],
+    'php' => [
+        'errorReportingLevel' => null,
+        'displayErrors' => null,
+        'logErrors' => null,
+        'errorLogPath' => null,
+    ],
 ];
