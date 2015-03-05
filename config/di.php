@@ -21,7 +21,7 @@ use Shade\ServiceProvider\ViewReplace as ViewReplaceServiceProvider;
 
 $appConfig = $app->getConfig();
 
-$app->registerService(ServiceContainer::SERVICE_ROUTER, new RouterWildcardServiceProvider());
+$app->registerService(ServiceContainer::SERVICE_ROUTER, new RouterWildcardServiceProvider($app));
 $app->registerService(ServiceContainer::SERVICE_VIEW, new ViewPhpServiceProvider($app));
 $app->registerService('view.replace', new ViewReplaceServiceProvider());
 $app->setService(ServiceContainer::SERVICE_LOGGER, $logger);

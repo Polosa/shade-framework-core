@@ -94,6 +94,7 @@ class ControllerDispatcher
                 $this->primaryRoute = $route;
             }
         } catch (Exception $e) {
+            $this->logger->debug('Route not found');
             $response = new Response();
             $response->setCode(404);
 

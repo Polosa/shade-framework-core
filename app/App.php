@@ -8,7 +8,6 @@
  */
 
 //TODO components in separate bundles
-//TODO Logger
 //TODO CLI: generate apache, nginx, fastcgi configs, hosts
 //TODO CLI: dev - ./phpcs -n --standard=PSR2 ...
 //TODO CLI: dev - ./php-cs-fixer fix ... (or phpcbf?)
@@ -17,7 +16,6 @@
 
 namespace Shade;
 
-use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -29,8 +27,6 @@ use Psr\Log\NullLogger;
  */
 class App
 {
-    use LoggerAwareTrait;
-
     /**
      * Application run modes
      */
@@ -112,20 +108,15 @@ class App
     /**
      * Initialize application before execution
      */
-    protected function init()
+    public function init()
     {
-        if (!($this->logger instanceof LoggerInterface)) {
-            if ($this->serviceContainer->isRegistered(ServiceContainer::SERVICE_LOGGER)) {
-                $this->logger = $this->getService(ServiceContainer::SERVICE_LOGGER);
-            } else {
-                $this->logger = new NullLogger();
-            }
-        } else {
-            if (!$this->serviceContainer->isRegistered(ServiceContainer::SERVICE_LOGGER)) {
-                $this->setService(ServiceContainer::SERVICE_LOGGER, $this->logger);
-            }
+        if (
+            !$this->serviceContainer->isRegistered(ServiceContainer::SERVICE_LOGGER)
+            || !($this->getLogger() instanceof LoggerInterface)
+        ) {
+            $this->setService(ServiceContainer::SERVICE_LOGGER, new NullLogger());
         }
-        $this->getControllerDispatcher()->setLogger($this->logger);
+        $this->getControllerDispatcher()->setLogger($this->getLogger());
     }
 
     /**
@@ -138,7 +129,7 @@ class App
     public function run(Request $request = null)
     {
         $this->init();
-        $this->logger->debug('Application launched');
+        $this->getLogger()->debug('Application launched');
         if (!($request instanceof Request)) {
             $appMode = $this->detectRunMode();
             if ($appMode == self::MODE_WEB) {
@@ -150,7 +141,7 @@ class App
         $this->setupRouter($request);
         $response = $this->execute($request);
         $this->output($response);
-        $this->logger->debug('Application execution completed');
+        $this->getLogger()->debug('Application execution completed');
     }
 
     /**
@@ -174,6 +165,7 @@ class App
      */
     public function output(Response $response)
     {
+        $this->getLogger()->debug('Response output');
         $response->output();
     }
 
@@ -292,6 +284,26 @@ class App
     }
 
     /**
+     * Get Router
+     *
+     * @return \Shade\Router\RouterInterface
+     */
+    public function getRouter()
+    {
+        return $this->getService(ServiceContainer::SERVICE_ROUTER);
+    }
+
+    /**
+     * Get Logger
+     *
+     * @return LoggerInterface
+     */
+    public function getLogger()
+    {
+        return $this->getService(ServiceContainer::SERVICE_LOGGER);
+    }
+
+    /**
      * Setup Router
      *
      * @param Request $request
@@ -311,16 +323,6 @@ class App
         }
 
         return $this;
-    }
-
-    /**
-     * Get Router
-     *
-     * @return \Shade\Router\RouterInterface
-     */
-    public function getRouter()
-    {
-        return $this->getService(ServiceContainer::SERVICE_ROUTER);
     }
 
     /**

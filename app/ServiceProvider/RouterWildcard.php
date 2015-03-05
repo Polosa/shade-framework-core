@@ -9,6 +9,7 @@
 
 namespace Shade\ServiceProvider;
 
+use Shade\App;
 use Shade\ServiceProviderInterface;
 use Shade\Router\Wildcard;
 
@@ -21,12 +22,24 @@ use Shade\Router\Wildcard;
 class RouterWildcard implements ServiceProviderInterface
 {
     /**
+     * Constructor
+     *
+     * @param App $app Application
+     */
+    public function __construct(App $app)
+    {
+        $this->app = $app;
+    }
+
+    /**
      * Instantiate Service
      *
      * @return \Shade\Router\Wildcard
      */
     public function instantiate()
     {
-        return new Wildcard();
+        $router = new Wildcard();
+        $router->setLogger($this->app->getLogger());
+        return $router;
     }
 }

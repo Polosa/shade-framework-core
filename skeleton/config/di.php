@@ -16,7 +16,7 @@ use Shade\ServiceProvider\RouterWildcard as RouterWildcardServiceProvider;
 
 $appConfig = $app->getConfig();
 
-$app->registerService(ServiceContainer::SERVICE_ROUTER, new RouterWildcardServiceProvider());
+$app->registerService(ServiceContainer::SERVICE_ROUTER, new RouterWildcardServiceProvider($app));
 $app->registerService(ServiceContainer::SERVICE_VIEW, new ViewPhpServiceProvider($app));
 $app->setService(ServiceContainer::SERVICE_LOGGER, $logger);
 

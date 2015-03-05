@@ -9,6 +9,8 @@
 
 namespace Shade;
 
+use Psr\Log\LoggerAwareTrait;
+
 /**
  * Router
  *
@@ -17,6 +19,8 @@ namespace Shade;
  */
 abstract class Router
 {
+    use LoggerAwareTrait;
+
     /**
      * Clean URLs
      *
@@ -40,6 +44,7 @@ abstract class Router
             if (!isset($server['REQUEST_URI'])) {
                 throw new Exception('REQUEST_URI is not set');
             }
+            $this->logger->debug('Routing of web request', ['REQUEST_URI' => $server['REQUEST_URI']]);
             $urlComponents = explode('?', $server['REQUEST_URI']);
             $destination = reset($urlComponents);
             if ($destination && (strpos($destination, $request::SCRIPT_NAME) === 0)) {
@@ -48,7 +53,12 @@ abstract class Router
         } elseif ($request instanceof Request\Cli) {
             $argv = $request->getArgv();
             $destination = isset($argv[1]) ? $argv[1] : '/';
+            $this->logger->debug('Routing of CLI request', ['argv' => $argv]);
         } elseif ($request instanceof Request\Virtual) {
+            $this->logger->debug(
+                'Routing of virtual request',
+                ['controller' => $request->getController(), 'action' => $request->getAction()]
+            );
             return new Route($request->getController(), $request->getAction());
         } else {
             throw new Exception('Request type not supported');
@@ -56,6 +66,8 @@ abstract class Router
 
         $destination = trim($destination, '/');
         $destination = empty($destination) ? '/' : $destination;
+
+        $this->logger->debug('Searching for corresponding route', ['destination' => $destination]);
 
         return $this->getRoute($destination);
     }
