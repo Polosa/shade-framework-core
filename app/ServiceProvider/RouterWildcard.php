@@ -22,13 +22,22 @@ use Shade\Router\Wildcard;
 class RouterWildcard implements ServiceProviderInterface
 {
     /**
+     * Path to Application's entry point (relative to the document root; e.g. /index.php)
+     *
+     * @var string
+     */
+    protected $entryPoint;
+
+    /**
      * Constructor
      *
-     * @param App $app Application
+     * @param App    $app        Application
+     * @param string $entryPoint Path to Application's entry point (relative to the document root; e.g. /index.php)
      */
-    public function __construct(App $app)
+    public function __construct(App $app, $entryPoint = null)
     {
         $this->app = $app;
+        $this->entryPoint = $entryPoint ? $entryPoint : $_SERVER['SCRIPT_NAME'];
     }
 
     /**
@@ -38,7 +47,7 @@ class RouterWildcard implements ServiceProviderInterface
      */
     public function instantiate()
     {
-        $router = new Wildcard();
+        $router = new Wildcard($this->entryPoint);
         $router->setLogger($this->app->getLogger());
         return $router;
     }

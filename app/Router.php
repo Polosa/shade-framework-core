@@ -29,6 +29,23 @@ abstract class Router
     protected $cleanUrlsEnabled = false;
 
     /**
+     * Path to Application's entry point (relative to the document root; e.g. /index.php)
+     *
+     * @var string
+     */
+    protected $entryPoint;
+
+    /**
+     * Constructor
+     *
+     * @param string $entryPoint Path to Application's entry point (relative to the document root; e.g. /index.php)
+     */
+    public function __construct($entryPoint)
+    {
+        $this->entryPoint = $entryPoint;
+    }
+
+    /**
      * Build route
      *
      * @param \Shade\Request $request Request
@@ -47,8 +64,8 @@ abstract class Router
             $this->logger->debug('Routing of web request', ['REQUEST_URI' => $server['REQUEST_URI']]);
             $urlComponents = explode('?', $server['REQUEST_URI']);
             $destination = reset($urlComponents);
-            if ($destination && (strpos($destination, $request::SCRIPT_NAME) === 0)) {
-                $destination = substr($destination, strlen($request::SCRIPT_NAME));
+            if (strpos($destination, $this->entryPoint) === 0) {
+                $destination = substr($destination, strlen($server['SCRIPT_NAME']));
             }
         } elseif ($request instanceof Request\Cli) {
             $argv = $request->getArgv();
@@ -108,7 +125,7 @@ abstract class Router
     {
         $url = $this->buildDestination($controller, $action, $args);
         if (!$this->cleanUrlsEnabled()) {
-            $url = Request\Web::SCRIPT_NAME.$url;
+            $url = $this->entryPoint.$url;
         }
         if ($get) {
             $url .= '?'.http_build_query($get);
@@ -133,7 +150,7 @@ abstract class Router
             throw new Exception('REQUEST_URI is not set');
         }
 
-        return strpos($server['REQUEST_URI'], $request::SCRIPT_NAME) !== 0;
+        return strpos($server['REQUEST_URI'], $this->entryPoint) !== 0;
     }
 
     /**

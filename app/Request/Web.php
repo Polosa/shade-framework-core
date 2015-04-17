@@ -20,11 +20,6 @@ use Shade\Request;
 class Web extends Request
 {
     /**
-     * Script name
-     */
-    const SCRIPT_NAME = '/index.php';
-
-    /**
      * Constructor
      *
      * @param array $server
